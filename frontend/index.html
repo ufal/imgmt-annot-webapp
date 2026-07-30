@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IMGMT Annotation Webapp</title>
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fabric.js (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
+  <style>
+    /* ---- scrollbar ---- */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+
+    /* ---- canvas wrapper ---- */
+    .canvas-wrap { position: relative; overflow: hidden; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; }
+    .canvas-wrap canvas { display: block; }
+
+    /* ---- popup ---- */
+    #click-popup { position: fixed; z-index: 1000; min-width: 180px; }
+
+    /* ---- highlighted list item ---- */
+    .bb-item.active, .align-item.active { background: #dbeafe; }
+
+    /* ---- tab active ---- */
+    .tab-btn.active { border-bottom: 2px solid #3b82f6; color: #1d4ed8; font-weight: 600; }
+
+    /* ---- drawing cursor ---- */
+    .canvas-draw { cursor: crosshair !important; }
+
+    /* ---- toast ---- */
+    #toast { transition: opacity 0.4s; }
+
+    /* ---- alignment line connector canvas ---- */
+    #align-overlay { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 10; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans text-slate-800">
+
+<!-- =====================================================================
+     LOGIN SCREEN
+===================================================================== -->
+<div id="login-screen" class="flex items-center justify-center min-h-screen">
+  <div class="bg-white rounded-2xl shadow-xl p-10 w-full max-w-sm">
+    <h1 class="text-2xl font-bold text-center mb-2 text-slate-800">IMGMT Annotation Tool</h1>
+    <p class="text-sm text-slate-500 text-center mb-8">Enter your User ID to continue</p>
+    <input id="user-id-input" type="text" placeholder="User ID (e.g. demo_user)"
+           class="w-full border border-slate-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4" />
+    <button id="login-btn"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-4 py-2 text-sm transition">
+      Log In
+    </button>
+    <p id="login-error" class="text-red-500 text-xs text-center mt-3 hidden"></p>
+  </div>
+</div>
+
+<!-- =====================================================================
+     MAIN APP  (hidden until login)
+===================================================================== -->
+<div id="app" class="hidden flex flex-col min-h-screen">
+
+  <!-- Top Nav -->
+  <header class="bg-white shadow-sm px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="font-bold text-blue-700 text-lg">IMGMT</span>
+      <span class="text-slate-400">|</span>
+      <select id="pair-selector"
+              class="border border-slate-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white">
+        <option value="">— select a pair —</option>
+      </select>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="save-status" class="text-xs text-slate-400"></span>
+      <span id="user-badge" class="text-sm font-medium text-slate-600"></span>
+      <button id="logout-btn" class="text-xs text-slate-400 hover:text-slate-700">Log out</button>
+    </div>
+  </header>
+
+  <!-- Mode tabs -->
+  <div class="bg-white border-b border-slate-200 px-6 flex gap-6 text-sm text-slate-500">
+    <button class="tab-btn active py-2 px-1" data-tab="bb">Bounding Box Correction</button>
+    <button class="tab-btn py-2 px-1" data-tab="align">Alignment Mapping</button>
+  </div>
+
+  <!-- Body -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Left sidebar -->
+    <aside id="left-panel" class="w-64 bg-white border-r border-slate-200 flex flex-col overflow-hidden flex-shrink-0">
+
+      <!-- BB tab panel -->
+      <div id="panel-bb" class="flex flex-col flex-1 overflow-hidden">
+        <div class="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Text Fields</span>
+          <div class="flex gap-1">
+            <button id="add-bb-btn-A" title="Draw new box on SVG A"
+                    class="text-xs px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium">+A</button>
+            <button id="add-bb-btn-B" title="Draw new box on SVG B"
+                    class="text-xs px-2 py-1 rounded bg-green-50 hover:bg-green-100 text-green-700 font-medium">+B</button>
+          </div>
+        </div>
+
+        <div class="flex gap-1 px-3 pt-2 pb-1 text-xs font-semibold text-slate-400">
+          <span class="w-1/2">SVG A</span>
+          <span class="w-1/2">SVG B</span>
+        </div>
+
+        <div class="flex flex-1 overflow-hidden gap-1 px-2 pb-2">
+          <!-- Side A list -->
+          <ul id="bb-list-A" class="w-1/2 overflow-y-auto flex flex-col gap-0.5 text-xs"></ul>
+          <!-- Side B list -->
+          <ul id="bb-list-B" class="w-1/2 overflow-y-auto flex flex-col gap-0.5 text-xs"></ul>
+        </div>
+      </div>
+
+      <!-- Alignment tab panel -->
+      <div id="panel-align" class="hidden flex-col flex-1 overflow-hidden">
+        <div class="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Alignments</span>
+          <button id="add-align-btn"
+                  class="text-xs px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium">+ Add</button>
+        </div>
+        <ul id="align-list" class="flex-1 overflow-y-auto p-2 flex flex-col gap-1 text-xs"></ul>
+      </div>
+    </aside>
+
+    <!-- Canvas area -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+      <div class="flex flex-1 overflow-hidden gap-2 p-3">
+
+        <!-- SVG A canvas -->
+        <div class="flex-1 flex flex-col gap-1 min-w-0">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-xs font-semibold text-blue-600">SVG A (Source)</span>
+            <div class="flex gap-2">
+              <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="A" data-dir="in">＋ zoom</button>
+              <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="A" data-dir="out">－ zoom</button>
+              <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="A" data-dir="fit">fit</button>
+            </div>
+          </div>
+          <div class="canvas-wrap flex-1 relative" id="wrap-A">
+            <canvas id="canvas-A"></canvas>
+          </div>
+        </div>
+
+        <!-- SVG B canvas -->
+        <div class="flex-1 flex flex-col gap-1 min-w-0">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-xs font-semibold text-green-600">SVG B (Translation)</span>
+            <div class="flex gap-2">
+              <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="B" data-dir="in">＋ zoom</button>
+              <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="B" data-dir="out">－ zoom</button>
+              <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="B" data-dir="fit">fit</button>
+            </div>
+          </div>
+          <div class="canvas-wrap flex-1 relative" id="wrap-B">
+            <canvas id="canvas-B"></canvas>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- =====================================================================
+     CLICK POPUP  (object picker)
+===================================================================== -->
+<div id="click-popup" class="hidden bg-white border border-slate-200 rounded-lg shadow-xl text-sm">
+  <div class="px-3 py-2 border-b border-slate-100 text-xs font-semibold text-slate-500">Objects at cursor</div>
+  <ul id="click-popup-list" class="max-h-60 overflow-y-auto py-1"></ul>
+  <div class="px-3 py-2 border-t border-slate-100">
+    <button id="popup-close" class="text-xs text-slate-400 hover:text-slate-700">Close</button>
+  </div>
+</div>
+
+<!-- =====================================================================
+     EDIT MODAL  (for inline text editing of a BB)
+===================================================================== -->
+<div id="edit-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+    <h2 class="font-semibold text-slate-700 mb-3 text-sm">Edit Bounding Box</h2>
+    <input id="edit-text" type="text" class="w-full border border-slate-300 rounded px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Text content" />
+    <div class="grid grid-cols-2 gap-2 text-xs mb-4">
+      <label class="flex flex-col gap-1">X <input id="edit-x" type="number" class="border border-slate-300 rounded px-2 py-1 focus:outline-none" /></label>
+      <label class="flex flex-col gap-1">Y <input id="edit-y" type="number" class="border border-slate-300 rounded px-2 py-1 focus:outline-none" /></label>
+      <label class="flex flex-col gap-1">Width <input id="edit-w" type="number" class="border border-slate-300 rounded px-2 py-1 focus:outline-none" /></label>
+      <label class="flex flex-col gap-1">Height <input id="edit-h" type="number" class="border border-slate-300 rounded px-2 py-1 focus:outline-none" /></label>
+    </div>
+    <div class="flex justify-between">
+      <button id="edit-delete" class="text-xs text-red-500 hover:text-red-700">Delete Box</button>
+      <div class="flex gap-2">
+        <button id="edit-cancel" class="text-xs text-slate-500 hover:text-slate-800 px-3 py-1 rounded border border-slate-200">Cancel</button>
+        <button id="edit-save" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     ADD ALIGNMENT MODAL
+===================================================================== -->
+<div id="align-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+    <h2 class="font-semibold text-slate-700 mb-3 text-sm">Add / Edit Alignment</h2>
+    <div class="flex flex-col gap-3 mb-4">
+      <label class="text-xs text-slate-500">Box from SVG A
+        <select id="align-box-A" class="mt-1 w-full border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none"></select>
+      </label>
+      <label class="text-xs text-slate-500">Box from SVG B
+        <select id="align-box-B" class="mt-1 w-full border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none"></select>
+      </label>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button id="align-cancel" class="text-xs text-slate-500 hover:text-slate-800 px-3 py-1 rounded border border-slate-200">Cancel</button>
+      <button id="align-save" class="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     TOAST
+===================================================================== -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-sm px-5 py-2 rounded-full shadow-lg opacity-0 pointer-events-none">
+  Saved
+</div>
+
+<!-- =====================================================================
+     JAVASCRIPT
+===================================================================== -->
+<script>
+'use strict';
+
+// =========================================================================
+// State
+// =========================================================================
+const state = {
+  userId: null,
+  displayName: null,
+  currentPair: null,
+  annotations: null,      // { svgA: { boxes: [] }, svgB: { boxes: [] }, alignments: [] }
+  mode: 'bb',             // 'bb' | 'align'
+  drawing: null,          // { side: 'A'|'B' } while in draw-new-box mode
+  editTarget: null,       // { side, box } during edit modal
+  alignEditIdx: null,     // index into alignments during align modal
+  saveTimer: null,
+  svgNaturalSize: { A: { w: 400, h: 300 }, B: { w: 400, h: 300 } },
+};
+
+// =========================================================================
+// Fabric canvases
+// =========================================================================
+const fabricCanvases = { A: null, B: null };
+const svgImages       = { A: null, B: null };  // fabric.Image objects
+const bbRects         = { A: {}, B: {} };       // id → fabric.Rect
+
+// =========================================================================
+// DOM helpers
+// =========================================================================
+const $  = (sel) => document.querySelector(sel);
+const $$ = (sel) => [...document.querySelectorAll(sel)];
+
+function showToast(msg = 'Saved') {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+}
+
+// =========================================================================
+// API helpers
+// =========================================================================
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || res.statusText);
+  }
+  return res.json();
+}
+
+// =========================================================================
+// Auto-save (debounced 800 ms)
+// =========================================================================
+function scheduleSave() {
+  $('#save-status').textContent = 'Unsaved changes…';
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(doSave, 800);
+}
+
+async function doSave() {
+  if (!state.userId || !state.currentPair || !state.annotations) return;
+  try {
+    await apiFetch(
+      `/api/users/${state.userId}/pairs/${state.currentPair}/annotations`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state.annotations),
+      }
+    );
+    $('#save-status').textContent = 'Saved ✓';
+    showToast('Saved ✓');
+  } catch (e) {
+    $('#save-status').textContent = 'Save failed!';
+    showToast('Save failed: ' + e.message);
+  }
+}
+
+// =========================================================================
+// Login
+// =========================================================================
+$('#login-btn').addEventListener('click', doLogin);
+$('#user-id-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const uid = $('#user-id-input').value.trim();
+  if (!uid) return;
+  try {
+    const data = await apiFetch(`/api/login/${encodeURIComponent(uid)}`);
+    state.userId      = data.user_id;
+    state.displayName = data.display_name;
+    $('#user-badge').textContent = data.display_name;
+
+    // Populate pair selector
+    const sel = $('#pair-selector');
+    sel.innerHTML = '<option value="">— select a pair —</option>';
+    for (const pid of data.datasets) {
+      const opt = document.createElement('option');
+      opt.value = pid;
+      opt.textContent = pid;
+      sel.appendChild(opt);
+    }
+
+    $('#login-screen').classList.add('hidden');
+    $('#app').classList.remove('hidden');
+    initCanvases();
+  } catch (e) {
+    const err = $('#login-error');
+    err.textContent = e.message;
+    err.classList.remove('hidden');
+  }
+}
+
+$('#logout-btn').addEventListener('click', () => {
+  state.userId = null;
+  state.currentPair = null;
+  state.annotations = null;
+  $('#login-screen').classList.remove('hidden');
+  $('#app').classList.add('hidden');
+  $('#user-id-input').value = '';
+  $('#login-error').classList.add('hidden');
+});
+
+// =========================================================================
+// Pair selection
+// =========================================================================
+$('#pair-selector').addEventListener('change', async (e) => {
+  const pid = e.target.value;
+  if (!pid) return;
+  state.currentPair = pid;
+  await loadPair(pid);
+});
+
+async function loadPair(pairId) {
+  // Fetch annotations
+  state.annotations = await apiFetch(`/api/users/${state.userId}/pairs/${pairId}/annotations`);
+  // Load SVGs
+  await Promise.all([
+    loadSVGIntoCanvas('A', `/api/users/${state.userId}/pairs/${pairId}/svg/A`),
+    loadSVGIntoCanvas('B', `/api/users/${state.userId}/pairs/${pairId}/svg/B`),
+  ]);
+  renderBoxes('A');
+  renderBoxes('B');
+  renderSidePanels();
+  $('#save-status').textContent = '';
+}
+
+// =========================================================================
+// Canvas initialisation
+// =========================================================================
+function initCanvases() {
+  ['A', 'B'].forEach((side) => {
+    const wrap = document.getElementById('wrap-' + side);
+    const canvasEl = document.getElementById('canvas-' + side);
+    canvasEl.width  = wrap.clientWidth  || 500;
+    canvasEl.height = wrap.clientHeight || 500;
+
+    const fc = new fabric.Canvas('canvas-' + side, {
+      selection: false,
+      fireRightClick: true,
+      stopContextMenu: true,
+    });
+    fabricCanvases[side] = fc;
+
+    // ---- Pan & zoom (mouse wheel) ----
+    fc.on('mouse:wheel', (opt) => {
+      const delta = opt.e.deltaY;
+      let zoom = fc.getZoom();
+      zoom *= 0.999 ** delta;
+      zoom = Math.max(0.1, Math.min(20, zoom));
+      fc.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+    });
+
+    // ---- Pan (alt+drag or middle button) ----
+    let isPanning = false, lastPan = null;
+    fc.on('mouse:down', (opt) => {
+      if (opt.e.altKey || opt.e.button === 1) {
+        isPanning = true;
+        lastPan = { x: opt.e.clientX, y: opt.e.clientY };
+        fc.setCursor('grab');
+      }
+    });
+    fc.on('mouse:move', (opt) => {
+      if (!isPanning) return;
+      const dx = opt.e.clientX - lastPan.x;
+      const dy = opt.e.clientY - lastPan.y;
+      fc.relativePan({ x: dx, y: dy });
+      lastPan = { x: opt.e.clientX, y: opt.e.clientY };
+    });
+    fc.on('mouse:up', () => {
+      isPanning = false;
+      fc.setCursor('default');
+    });
+
+    // ---- Click-to-find: record mousedown position ----
+    // We trigger the popup on mouse:up so we can distinguish a clean click
+    // from a drag (pan or box move).  We must NOT restrict by opt.target here
+    // because Fabric.js may set opt.target to an SVG sub-element (text node,
+    // background rect, etc.) even when the parent group has evented:false —
+    // which previously caused the popup to be silently suppressed.
+    let clickDownPos = null;
+    fc.on('mouse:down', (opt) => {
+      if (opt.e.button === 0 && !opt.e.altKey) {
+        clickDownPos = { x: opt.e.clientX, y: opt.e.clientY };
+      }
+    });
+
+    fc.on('mouse:up', (opt) => {
+      const down = clickDownPos;
+      clickDownPos = null;
+      if (!down) return;
+      if (state.drawing && state.drawing.side === side) return;
+      if (opt.e.altKey || opt.e.button !== 0) return;
+      // Suppress popup when the mouse moved more than 5px (drag, not click)
+      if (Math.hypot(opt.e.clientX - down.x, opt.e.clientY - down.y) > 5) return;
+      showClickPopup(side, opt);
+    });
+
+    // ---- Draw new bounding box ----
+    setupDrawing(fc, side);
+  });
+
+  // Resize canvases when window resizes
+  window.addEventListener('resize', resizeCanvases);
+}
+
+function resizeCanvases() {
+  ['A', 'B'].forEach((side) => {
+    const wrap = document.getElementById('wrap-' + side);
+    const fc   = fabricCanvases[side];
+    if (!fc) return;
+    fc.setWidth(wrap.clientWidth);
+    fc.setHeight(wrap.clientHeight);
+    fc.renderAll();
+  });
+}
+
+// =========================================================================
+// Load SVG into canvas
+// =========================================================================
+function loadSVGIntoCanvas(side, url) {
+  return new Promise((resolve) => {
+    const fc = fabricCanvases[side];
+    // Remove existing SVG image
+    if (svgImages[side]) {
+      fc.remove(svgImages[side]);
+      svgImages[side] = null;
+    }
+    // Remove all BB rects
+    Object.values(bbRects[side]).forEach((r) => fc.remove(r));
+    bbRects[side] = {};
+
+    fabric.loadSVGFromURL(url, (objects, options) => {
+      const grp = fabric.util.groupSVGElements(objects, options);
+      grp.set({
+        selectable: false,
+        evented: false,
+        hasBorders: false,
+        hasControls: false,
+        originX: 'left',
+        originY: 'top',
+        left: 0,
+        top: 0,
+      });
+      fc.add(grp);
+      svgImages[side] = grp;
+      state.svgNaturalSize[side] = { w: grp.width, h: grp.height };
+      fitToCanvas(side);
+      fc.renderAll();
+      resolve();
+    });
+  });
+}
+
+function fitToCanvas(side) {
+  const fc  = fabricCanvases[side];
+  const img = svgImages[side];
+  if (!fc || !img) return;
+  const scaleX = fc.getWidth()  / (img.width  || 400);
+  const scaleY = fc.getHeight() / (img.height || 300);
+  const scale  = Math.min(scaleX, scaleY) * 0.92;
+  fc.setViewportTransform([scale, 0, 0, scale, 20, 20]);
+  fc.renderAll();
+}
+
+// =========================================================================
+// Bounding box rendering
+// =========================================================================
+const COLORS = {
+  A: { fill: 'rgba(59,130,246,0.12)', stroke: '#3b82f6' },
+  B: { fill: 'rgba(16,185,129,0.12)', stroke: '#10b981' },
+};
+
+function renderBoxes(side) {
+  const fc     = fabricCanvases[side];
+  const boxes  = state.annotations?.[`svg${side}`]?.boxes ?? [];
+  const color  = COLORS[side];
+
+  // Remove old rects
+  Object.values(bbRects[side]).forEach((r) => fc.remove(r));
+  bbRects[side] = {};
+
+  boxes.forEach((box) => {
+    const rect = new fabric.Rect({
+      left:          box.x,
+      top:           box.y,
+      width:         box.width,
+      height:        box.height,
+      fill:          color.fill,
+      stroke:        color.stroke,
+      strokeWidth:   1.5,
+      selectable:    true,
+      hasRotatingPoint: false,
+      data:          { side, id: box.id },
+    });
+
+    // Move/scale → update annotations
+    rect.on('modified', () => {
+      const b = getBox(side, box.id);
+      if (!b) return;
+      const mat = fc.viewportTransform;
+      const invMat = fabric.util.invertTransform(mat);
+      const tl = fabric.util.transformPoint({ x: rect.left, y: rect.top }, invMat);
+      b.x      = Math.round(tl.x);
+      b.y      = Math.round(tl.y);
+      b.width  = Math.round(rect.getScaledWidth());
+      b.height = Math.round(rect.getScaledHeight());
+      renderSidePanels();
+      scheduleSave();
+    });
+
+    // Double-click → open edit modal
+    rect.on('mousedblclick', () => openEditModal(side, box.id));
+
+    fc.add(rect);
+    bbRects[side][box.id] = rect;
+  });
+
+  // Bring rects above SVG image
+  fc.bringToFront(svgImages[side]);
+  Object.values(bbRects[side]).forEach((r) => fc.bringToFront(r));
+  fc.renderAll();
+}
+
+// =========================================================================
+// Side panels
+// =========================================================================
+function renderSidePanels() {
+  renderBBPanel('A');
+  renderBBPanel('B');
+  renderAlignPanel();
+}
+
+function renderBBPanel(side) {
+  const ul    = document.getElementById(`bb-list-${side}`);
+  const boxes = state.annotations?.[`svg${side}`]?.boxes ?? [];
+  ul.innerHTML = '';
+
+  boxes.forEach((box) => {
+    const li = document.createElement('li');
+    li.className = 'bb-item px-2 py-1 rounded cursor-pointer hover:bg-blue-50 flex items-center justify-between gap-1';
+    li.dataset.id   = box.id;
+    li.dataset.side = side;
+
+    const span = document.createElement('span');
+    span.className = 'truncate flex-1';
+    span.textContent = box.text || `[${box.id}]`;
+    span.title = box.text;
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✎';
+    editBtn.title = 'Edit';
+    editBtn.className = 'text-slate-400 hover:text-slate-700 flex-shrink-0';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditModal(side, box.id);
+    });
+
+    li.appendChild(span);
+    li.appendChild(editBtn);
+
+    li.addEventListener('click', () => highlightBox(side, box.id));
+    li.addEventListener('dblclick', () => openEditModal(side, box.id));
+
+    ul.appendChild(li);
+  });
+}
+
+function renderAlignPanel() {
+  const ul         = $('#align-list');
+  const alignments = state.annotations?.alignments ?? [];
+  ul.innerHTML = '';
+
+  alignments.forEach((al, idx) => {
+    const boxA = getBox('A', al.boxA);
+    const boxB = getBox('B', al.boxB);
+
+    const li = document.createElement('li');
+    li.className = 'align-item flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 cursor-pointer';
+    li.dataset.idx = idx;
+
+    const textA = document.createElement('span');
+    textA.className = 'flex-1 truncate text-blue-700 text-xs';
+    textA.textContent = boxA?.text || al.boxA;
+
+    const arrow = document.createElement('span');
+    arrow.className = 'text-slate-400 flex-shrink-0';
+    arrow.textContent = '↔';
+
+    const textB = document.createElement('span');
+    textB.className = 'flex-1 truncate text-green-700 text-xs';
+    textB.textContent = boxB?.text || al.boxB;
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '✕';
+    delBtn.title = 'Delete alignment';
+    delBtn.className = 'text-slate-300 hover:text-red-500 flex-shrink-0';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.annotations.alignments.splice(idx, 1);
+      renderSidePanels();
+      scheduleSave();
+    });
+
+    li.appendChild(textA);
+    li.appendChild(arrow);
+    li.appendChild(textB);
+    li.appendChild(delBtn);
+
+    li.addEventListener('click', () => {
+      // Highlight both boxes
+      if (al.boxA) highlightBox('A', al.boxA);
+      if (al.boxB) highlightBox('B', al.boxB);
+    });
+
+    ul.appendChild(li);
+  });
+}
+
+// =========================================================================
+// Highlight / select a box
+// =========================================================================
+function highlightBox(side, id) {
+  const fc   = fabricCanvases[side];
+  const rect = bbRects[side][id];
+  if (!rect) return;
+  fc.setActiveObject(rect);
+  fc.renderAll();
+
+  // Scroll sidebar item into view
+  const item = document.querySelector(`#bb-list-${side} [data-id="${id}"]`);
+  if (item) {
+    $$('#bb-list-A .bb-item, #bb-list-B .bb-item').forEach((el) => el.classList.remove('active'));
+    item.classList.add('active');
+    item.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// =========================================================================
+// Click-to-find popup
+// =========================================================================
+function showClickPopup(side, opt) {
+  // Transform click point to canvas coordinate space
+  const pointer = fabricCanvases[side].getPointer(opt.e, false);
+  const boxes   = state.annotations?.[`svg${side}`]?.boxes ?? [];
+
+  const hits = boxes.filter(
+    (b) =>
+      pointer.x >= b.x &&
+      pointer.x <= b.x + b.width &&
+      pointer.y >= b.y &&
+      pointer.y <= b.y + b.height
+  );
+
+  const popup = $('#click-popup');
+  const list  = $('#click-popup-list');
+  list.innerHTML = '';
+
+  if (hits.length === 0) {
+    popup.classList.add('hidden');
+    return;
+  }
+
+  hits.forEach((box) => {
+    const li = document.createElement('li');
+    li.className = 'px-4 py-2 hover:bg-slate-50 cursor-pointer flex items-center justify-between gap-2';
+
+    const info = document.createElement('span');
+    info.className = 'truncate';
+    info.textContent = box.text || `[${box.id}]`;
+
+    const actions = document.createElement('div');
+    actions.className = 'flex gap-1 flex-shrink-0';
+
+    const selectBtn = document.createElement('button');
+    selectBtn.textContent = 'Select';
+    selectBtn.className = 'text-xs text-blue-600 hover:underline';
+    selectBtn.addEventListener('click', () => {
+      popup.classList.add('hidden');
+      highlightBox(side, box.id);
+    });
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.className = 'text-xs text-blue-600 hover:underline';
+    editBtn.addEventListener('click', () => {
+      popup.classList.add('hidden');
+      openEditModal(side, box.id);
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Del';
+    delBtn.className = 'text-xs text-red-500 hover:underline';
+    delBtn.addEventListener('click', () => {
+      popup.classList.add('hidden');
+      deleteBox(side, box.id);
+    });
+
+    actions.append(selectBtn, editBtn, delBtn);
+    li.append(info, actions);
+    list.appendChild(li);
+  });
+
+  // Position popup near cursor
+  popup.style.left = (opt.e.clientX + 8) + 'px';
+  popup.style.top  = (opt.e.clientY + 8) + 'px';
+  popup.classList.remove('hidden');
+}
+
+$('#popup-close').addEventListener('click', () => $('#click-popup').classList.add('hidden'));
+
+// Close popup on outside click
+document.addEventListener('click', (e) => {
+  if (!$('#click-popup').contains(e.target)) {
+    $('#click-popup').classList.add('hidden');
+  }
+});
+
+// =========================================================================
+// Draw new bounding box
+// =========================================================================
+function setupDrawing(fc, side) {
+  let isDrawing = false;
+  let startPoint = null;
+  let drawRect   = null;
+
+  fc.on('mouse:down', (opt) => {
+    if (!state.drawing || state.drawing.side !== side) return;
+    if (opt.e.button !== 0) return;
+    isDrawing  = true;
+    startPoint = fc.getPointer(opt.e);
+    drawRect   = new fabric.Rect({
+      left:        startPoint.x,
+      top:         startPoint.y,
+      width:       0,
+      height:      0,
+      fill:        COLORS[side].fill,
+      stroke:      COLORS[side].stroke,
+      strokeWidth: 1.5,
+      selectable:  false,
+    });
+    fc.add(drawRect);
+  });
+
+  fc.on('mouse:move', (opt) => {
+    if (!isDrawing || !drawRect) return;
+    const p     = fc.getPointer(opt.e);
+    const left  = Math.min(p.x, startPoint.x);
+    const top   = Math.min(p.y, startPoint.y);
+    const w     = Math.abs(p.x - startPoint.x);
+    const h     = Math.abs(p.y - startPoint.y);
+    drawRect.set({ left, top, width: w, height: h });
+    fc.renderAll();
+  });
+
+  fc.on('mouse:up', (opt) => {
+    if (!isDrawing) return;
+    isDrawing = false;
+    if (!drawRect) return;
+    const w = drawRect.width;
+    const h = drawRect.height;
+    fc.remove(drawRect);
+    drawRect = null;
+
+    if (w < 5 || h < 5) {
+      stopDrawing();
+      return;
+    }
+
+    // Create new box
+    const newBox = {
+      id:     generateId(side),
+      x:      Math.round(drawRect ? drawRect.left : startPoint.x),
+      y:      Math.round(drawRect ? drawRect.top  : startPoint.y),
+      width:  Math.round(w),
+      height: Math.round(h),
+      text:   '',
+    };
+    // Re-read from the temp rect we already removed
+    const ptr = fc.getPointer(opt.e);
+    newBox.x = Math.round(Math.min(ptr.x, startPoint.x));
+    newBox.y = Math.round(Math.min(ptr.y, startPoint.y));
+
+    state.annotations[`svg${side}`].boxes.push(newBox);
+    stopDrawing();
+    renderBoxes(side);
+    renderSidePanels();
+    openEditModal(side, newBox.id);
+    scheduleSave();
+  });
+}
+
+function generateId(side) {
+  const boxes  = state.annotations?.[`svg${side}`]?.boxes ?? [];
+  const nums   = boxes.map((b) => parseInt(b.id.replace(/\D/g, ''), 10)).filter(Number.isFinite);
+  const maxNum = nums.length ? Math.max(...nums) : 0;
+  return `${side}${maxNum + 1}`;
+}
+
+$('#add-bb-btn-A').addEventListener('click', () => startDrawing('A'));
+$('#add-bb-btn-B').addEventListener('click', () => startDrawing('B'));
+
+function startDrawing(side) {
+  state.drawing = { side };
+  const wrap = document.getElementById('wrap-' + side);
+  wrap.classList.add('canvas-draw');
+  fabricCanvases[side].defaultCursor = 'crosshair';
+  fabricCanvases[side].hoverCursor   = 'crosshair';
+  fabricCanvases[side].selection     = false;
+  showToast(`Click and drag on SVG ${side} to draw a box`);
+}
+
+function stopDrawing() {
+  if (!state.drawing) return;
+  const side = state.drawing.side;
+  state.drawing = null;
+  const wrap = document.getElementById('wrap-' + side);
+  wrap.classList.remove('canvas-draw');
+  fabricCanvases[side].defaultCursor = 'default';
+  fabricCanvases[side].hoverCursor   = 'move';
+  fabricCanvases[side].selection     = false;
+}
+
+// =========================================================================
+// Edit modal
+// =========================================================================
+function openEditModal(side, id) {
+  const box = getBox(side, id);
+  if (!box) return;
+  state.editTarget = { side, id };
+
+  $('#edit-text').value = box.text   ?? '';
+  $('#edit-x').value    = box.x      ?? 0;
+  $('#edit-y').value    = box.y      ?? 0;
+  $('#edit-w').value    = box.width  ?? 0;
+  $('#edit-h').value    = box.height ?? 0;
+
+  $('#edit-modal').classList.remove('hidden');
+  $('#edit-text').focus();
+}
+
+$('#edit-save').addEventListener('click', () => {
+  const { side, id } = state.editTarget ?? {};
+  const box = getBox(side, id);
+  if (!box) return;
+
+  box.text   = $('#edit-text').value;
+  box.x      = parseFloat($('#edit-x').value) || 0;
+  box.y      = parseFloat($('#edit-y').value) || 0;
+  box.width  = parseFloat($('#edit-w').value) || 0;
+  box.height = parseFloat($('#edit-h').value) || 0;
+
+  $('#edit-modal').classList.add('hidden');
+  renderBoxes(side);
+  renderSidePanels();
+  scheduleSave();
+});
+
+$('#edit-delete').addEventListener('click', () => {
+  const { side, id } = state.editTarget ?? {};
+  $('#edit-modal').classList.add('hidden');
+  deleteBox(side, id);
+});
+
+$('#edit-cancel').addEventListener('click', () => {
+  $('#edit-modal').classList.add('hidden');
+});
+
+// =========================================================================
+// Delete box
+// =========================================================================
+function deleteBox(side, id) {
+  if (!state.annotations) return;
+  const boxes = state.annotations[`svg${side}`].boxes;
+  const idx   = boxes.findIndex((b) => b.id === id);
+  if (idx === -1) return;
+  boxes.splice(idx, 1);
+  // Also remove any alignments referencing this box
+  const key   = side === 'A' ? 'boxA' : 'boxB';
+  state.annotations.alignments = state.annotations.alignments.filter((al) => al[key] !== id);
+  renderBoxes(side);
+  renderSidePanels();
+  scheduleSave();
+}
+
+// =========================================================================
+// Alignment modal
+// =========================================================================
+$('#add-align-btn').addEventListener('click', () => {
+  state.alignEditIdx = null;
+  populateAlignSelects(null, null);
+  $('#align-modal').classList.remove('hidden');
+});
+
+function populateAlignSelects(selA, selB) {
+  const boxesA = state.annotations?.svgA?.boxes ?? [];
+  const boxesB = state.annotations?.svgB?.boxes ?? [];
+
+  const selElA = $('#align-box-A');
+  const selElB = $('#align-box-B');
+  selElA.innerHTML = '<option value="">— none —</option>';
+  selElB.innerHTML = '<option value="">— none —</option>';
+
+  boxesA.forEach((b) => {
+    const opt = document.createElement('option');
+    opt.value = b.id;
+    opt.textContent = `${b.id}: ${b.text || '(empty)'}`;
+    if (b.id === selA) opt.selected = true;
+    selElA.appendChild(opt);
+  });
+  boxesB.forEach((b) => {
+    const opt = document.createElement('option');
+    opt.value = b.id;
+    opt.textContent = `${b.id}: ${b.text || '(empty)'}`;
+    if (b.id === selB) opt.selected = true;
+    selElB.appendChild(opt);
+  });
+}
+
+$('#align-save').addEventListener('click', () => {
+  const boxA = $('#align-box-A').value;
+  const boxB = $('#align-box-B').value;
+  if (!boxA || !boxB) { showToast('Please select both boxes'); return; }
+
+  const al = { boxA, boxB };
+  if (state.alignEditIdx !== null) {
+    state.annotations.alignments[state.alignEditIdx] = al;
+  } else {
+    state.annotations.alignments.push(al);
+  }
+  $('#align-modal').classList.add('hidden');
+  renderSidePanels();
+  scheduleSave();
+});
+
+$('#align-cancel').addEventListener('click', () => {
+  $('#align-modal').classList.add('hidden');
+});
+
+// =========================================================================
+// Zoom buttons
+// =========================================================================
+$$('.zoom-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const side = btn.dataset.canvas;
+    const dir  = btn.dataset.dir;
+    const fc   = fabricCanvases[side];
+    if (!fc) return;
+    if (dir === 'fit') {
+      fitToCanvas(side);
+    } else {
+      const zoom = fc.getZoom() * (dir === 'in' ? 1.2 : 0.8);
+      const cx = fc.getWidth() / 2;
+      const cy = fc.getHeight() / 2;
+      fc.zoomToPoint({ x: cx, y: cy }, zoom);
+    }
+    fc.renderAll();
+  });
+});
+
+// =========================================================================
+// Tab switching
+// =========================================================================
+$$('.tab-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    $$('.tab-btn').forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = btn.dataset.tab;
+
+    if (state.mode === 'bb') {
+      $('#panel-bb').classList.remove('hidden');
+      $('#panel-align').classList.add('hidden');
+    } else {
+      $('#panel-bb').classList.add('hidden');
+      $('#panel-align').classList.remove('hidden');
+    }
+  });
+});
+
+// =========================================================================
+// Utility: get box from state
+// =========================================================================
+function getBox(side, id) {
+  return (state.annotations?.[`svg${side}`]?.boxes ?? []).find((b) => b.id === id) ?? null;
+}
+
+// =========================================================================
+// Keyboard shortcuts
+// =========================================================================
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    stopDrawing();
+    $('#click-popup').classList.add('hidden');
+    $('#edit-modal').classList.add('hidden');
+    $('#align-modal').classList.add('hidden');
+  }
+  // Delete selected box with Delete key
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    // Only if no input is focused
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+    ['A', 'B'].forEach((side) => {
+      const fc  = fabricCanvases[side];
+      const obj = fc?.getActiveObject?.();
+      if (obj?.data?.id) {
+        deleteBox(obj.data.side, obj.data.id);
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>

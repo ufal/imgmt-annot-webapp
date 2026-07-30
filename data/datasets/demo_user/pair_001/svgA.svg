@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  <text x="20" y="40" font-size="14" fill="#495057" font-family="serif">Annual Report 2024</text>
+  <text x="20" y="80" font-size="12" fill="#495057" font-family="serif">Introduction</text>
+  <text x="20" y="110" font-size="10" fill="#6c757d" font-family="serif">This document summarises our</text>
+  <text x="20" y="125" font-size="10" fill="#6c757d" font-family="serif">key achievements this year.</text>
+  <text x="20" y="160" font-size="12" fill="#495057" font-family="serif">Financial Overview</text>
+  <text x="20" y="190" font-size="10" fill="#6c757d" font-family="serif">Revenue grew by 15% compared</text>
+  <text x="20" y="205" font-size="10" fill="#6c757d" font-family="serif">to the previous fiscal year.</text>
+  <text x="20" y="240" font-size="11" fill="#343a40" font-family="serif">Conclusion</text>
+  <text x="20" y="265" font-size="10" fill="#6c757d" font-family="serif">We remain committed to growth.</text>
+</svg>

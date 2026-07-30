@@ -1,0 +1,33 @@
+{
+  "svgA": {
+    "boxes": [
+      {"id": "A1", "x": 18, "y": 24, "width": 160, "height": 20, "text": "Annual Report 2024"},
+      {"id": "A2", "x": 18, "y": 64, "width": 100, "height": 18, "text": "Introduction"},
+      {"id": "A3", "x": 18, "y": 96, "width": 200, "height": 34, "text": "This document summarises our key achievements this year."},
+      {"id": "A4", "x": 18, "y": 144, "width": 150, "height": 18, "text": "Financial Overview"},
+      {"id": "A5", "x": 18, "y": 175, "width": 210, "height": 34, "text": "Revenue grew by 15% compared to the previous fiscal year."},
+      {"id": "A6", "x": 18, "y": 224, "width": 100, "height": 18, "text": "Conclusion"},
+      {"id": "A7", "x": 18, "y": 249, "width": 210, "height": 18, "text": "We remain committed to growth."}
+    ]
+  },
+  "svgB": {
+    "boxes": [
+      {"id": "B1", "x": 18, "y": 24, "width": 160, "height": 20, "text": "Jahresbericht 2024"},
+      {"id": "B2", "x": 18, "y": 64, "width": 100, "height": 18, "text": "Einleitung"},
+      {"id": "B3", "x": 18, "y": 96, "width": 240, "height": 34, "text": "Dieses Dokument fasst unsere wichtigsten Errungenschaften zusammen."},
+      {"id": "B4", "x": 18, "y": 144, "width": 130, "height": 18, "text": "Finanzüberblick"},
+      {"id": "B5", "x": 18, "y": 175, "width": 210, "height": 34, "text": "Der Umsatz stieg im Vergleich zum Vorjahr um 15%."},
+      {"id": "B6", "x": 18, "y": 224, "width": 60, "height": 18, "text": "Fazit"},
+      {"id": "B7", "x": 18, "y": 249, "width": 240, "height": 18, "text": "Wir bleiben dem Wachstum verpflichtet."}
+    ]
+  },
+  "alignments": [
+    {"boxA": "A1", "boxB": "B1"},
+    {"boxA": "A2", "boxB": "B2"},
+    {"boxA": "A3", "boxB": "B3"},
+    {"boxA": "A4", "boxB": "B4"},
+    {"boxA": "A5", "boxB": "B5"},
+    {"boxA": "A6", "boxB": "B6"},
+    {"boxA": "A7", "boxB": "B7"}
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "svgA": {
+    "boxes": [
+      {"id": "A1", "x": 18, "y": 24, "width": 175, "height": 20, "text": "Technical Manual v3"},
+      {"id": "A2", "x": 18, "y": 64, "width": 140, "height": 18, "text": "Safety Guidelines"},
+      {"id": "A3", "x": 18, "y": 96, "width": 210, "height": 34, "text": "Always disconnect power before performing maintenance."},
+      {"id": "A4", "x": 18, "y": 144, "width": 100, "height": 18, "text": "Installation"},
+      {"id": "A5", "x": 18, "y": 175, "width": 210, "height": 34, "text": "Mount the device on a flat and stable surface."}
+    ]
+  },
+  "svgB": {
+    "boxes": [
+      {"id": "B1", "x": 18, "y": 24, "width": 200, "height": 20, "text": "Technisches Handbuch v3"},
+      {"id": "B2", "x": 18, "y": 64, "width": 160, "height": 18, "text": "Sicherheitshinweise"},
+      {"id": "B3", "x": 18, "y": 96, "width": 240, "height": 34, "text": "Trennen Sie immer die Stromversorgung vor Wartungsarbeiten."},
+      {"id": "B4", "x": 18, "y": 144, "width": 100, "height": 18, "text": "Installation"},
+      {"id": "B5", "x": 18, "y": 175, "width": 230, "height": 34, "text": "Montieren Sie das Gerät auf einer ebenen und stabilen Fläche."}
+    ]
+  },
+  "alignments": [
+    {"boxA": "A1", "boxB": "B1"},
+    {"boxA": "A2", "boxB": "B2"},
+    {"boxA": "A3", "boxB": "B3"},
+    {"boxA": "A4", "boxB": "B4"},
+    {"boxA": "A5", "boxB": "B5"}
+  ]
+}
