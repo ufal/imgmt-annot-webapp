@@ -1,0 +1,10 @@
+{
+  "demo_user": {
+    "display_name": "Demo User",
+    "datasets": ["pair_001", "pair_002"]
+  },
+  "annotator1": {
+    "display_name": "Annotator One",
+    "datasets": ["pair_001"]
+  }
+}

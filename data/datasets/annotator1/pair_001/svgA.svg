@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#d1ecf1" stroke="#17a2b8" stroke-width="1"/>
+  <text x="20" y="40" font-size="14" fill="#0c5460" font-family="serif">Technical Manual v3</text>
+  <text x="20" y="80" font-size="12" fill="#495057" font-family="serif">Safety Guidelines</text>
+  <text x="20" y="110" font-size="10" fill="#6c757d" font-family="serif">Always disconnect power before</text>
+  <text x="20" y="125" font-size="10" fill="#6c757d" font-family="serif">performing maintenance.</text>
+  <text x="20" y="160" font-size="12" fill="#495057" font-family="serif">Installation</text>
+  <text x="20" y="190" font-size="10" fill="#6c757d" font-family="serif">Mount the device on a flat</text>
+  <text x="20" y="205" font-size="10" fill="#6c757d" font-family="serif">and stable surface.</text>
+</svg>

@@ -1,0 +1,33 @@
+{
+  "svgA": {
+    "boxes": [
+      {"id": "A1", "x": 18, "y": 24, "width": 150, "height": 20, "text": "Product Catalogue"},
+      {"id": "A2", "x": 18, "y": 64, "width": 100, "height": 18, "text": "Electronics"},
+      {"id": "A3", "x": 18, "y": 96, "width": 180, "height": 18, "text": "Laptop Pro X1 — $999"},
+      {"id": "A4", "x": 18, "y": 116, "width": 200, "height": 18, "text": "Wireless Headphones — $149"},
+      {"id": "A5", "x": 18, "y": 149, "width": 100, "height": 18, "text": "Accessories"},
+      {"id": "A6", "x": 18, "y": 179, "width": 130, "height": 18, "text": "USB-C Hub — $49"},
+      {"id": "A7", "x": 18, "y": 199, "width": 140, "height": 18, "text": "Laptop Stand — $39"}
+    ]
+  },
+  "svgB": {
+    "boxes": [
+      {"id": "B1", "x": 18, "y": 24, "width": 140, "height": 20, "text": "Produktkatalog"},
+      {"id": "B2", "x": 18, "y": 64, "width": 90, "height": 18, "text": "Elektronik"},
+      {"id": "B3", "x": 18, "y": 96, "width": 180, "height": 18, "text": "Laptop Pro X1 — 949 €"},
+      {"id": "B4", "x": 18, "y": 116, "width": 210, "height": 18, "text": "Kabellose Kopfhörer — 139 €"},
+      {"id": "B5", "x": 18, "y": 149, "width": 80, "height": 18, "text": "Zubehör"},
+      {"id": "B6", "x": 18, "y": 179, "width": 120, "height": 18, "text": "USB-C-Hub — 45 €"},
+      {"id": "B7", "x": 18, "y": 199, "width": 150, "height": 18, "text": "Laptop-Ständer — 35 €"}
+    ]
+  },
+  "alignments": [
+    {"boxA": "A1", "boxB": "B1"},
+    {"boxA": "A2", "boxB": "B2"},
+    {"boxA": "A3", "boxB": "B3"},
+    {"boxA": "A4", "boxB": "B4"},
+    {"boxA": "A5", "boxB": "B5"},
+    {"boxA": "A6", "boxB": "B6"},
+    {"boxA": "A7", "boxB": "B7"}
+  ]
+}
