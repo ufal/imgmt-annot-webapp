@@ -429,12 +429,27 @@ function initCanvases() {
       fc.setCursor('default');
     });
 
-    // ---- Click-to-find (left click on canvas background) ----
+    // ---- Click-to-find: record mousedown position ----
+    // We trigger the popup on mouse:up so we can distinguish a clean click
+    // from a drag (pan or box move).  We must NOT restrict by opt.target here
+    // because Fabric.js may set opt.target to an SVG sub-element (text node,
+    // background rect, etc.) even when the parent group has evented:false —
+    // which previously caused the popup to be silently suppressed.
+    let clickDownPos = null;
     fc.on('mouse:down', (opt) => {
-      if (state.drawing && state.drawing.side === side) return; // handled separately
+      if (opt.e.button === 0 && !opt.e.altKey) {
+        clickDownPos = { x: opt.e.clientX, y: opt.e.clientY };
+      }
+    });
+
+    fc.on('mouse:up', (opt) => {
+      const down = clickDownPos;
+      clickDownPos = null;
+      if (!down) return;
+      if (state.drawing && state.drawing.side === side) return;
       if (opt.e.altKey || opt.e.button !== 0) return;
-      // Only fire when clicking background (no active object)
-      if (opt.target && opt.target !== svgImages[side]) return;
+      // Suppress popup when the mouse moved more than 5px (drag, not click)
+      if (Math.hypot(opt.e.clientX - down.x, opt.e.clientY - down.y) > 5) return;
       showClickPopup(side, opt);
     });
 
