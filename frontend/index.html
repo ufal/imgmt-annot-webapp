@@ -392,8 +392,10 @@ async function loadPair(pairId) {
   state.annotations = await apiFetch(`/api/users/${state.userId}/pairs/${pairId}/annotations`);
   // Load SVGs
   await Promise.all([
-    loadSVGIntoCanvas('A', `/api/users/${state.userId}/pairs/${pairId}/svg/A`),
-    loadSVGIntoCanvas('B', `/api/users/${state.userId}/pairs/${pairId}/svg/B`),
+    loadSVGIntoCanvas('A', `/api/users/${state.userId}/pairs/${pairId}/svg/A`,
+      state.annotations.svgA?.image_size),
+    loadSVGIntoCanvas('B', `/api/users/${state.userId}/pairs/${pairId}/svg/B`,
+      state.annotations.svgB?.image_size),
   ]);
   await refreshTranslations();
   renderBoxes('A');
@@ -519,7 +521,7 @@ function resizeCanvases() {
 // =========================================================================
 // Load SVG into canvas
 // =========================================================================
-function loadSVGIntoCanvas(side, url) {
+function loadSVGIntoCanvas(side, url, imageSize) {
   return new Promise((resolve) => {
     const fc = fabricCanvases[side];
     // Remove existing SVG image
@@ -563,8 +565,11 @@ function loadSVGIntoCanvas(side, url) {
             svgH = svgH || parseFloat(parts[3]) || svgH;
           }
         }
-        svgW = svgW || 400;
-        svgH = svgH || 300;
+        // Bounding boxes are defined in the original PNG coordinate space.
+        // Prefer those dimensions over SVG metadata, which may use a
+        // different scale or omit the image's original size entirely.
+        svgW = imageSize?.width || svgW || 400;
+        svgH = imageSize?.height || svgH || 300;
 
         // Ensure the SVG root has explicit width/height so that browsers
         // can report correct naturalWidth/naturalHeight on the img element.
