@@ -495,11 +495,22 @@ function loadSVGIntoCanvas(side, url) {
       .then((r) => r.text())
       .then((svgText) => {
         // Parse SVG dimensions from the document element.
+        // Converts a CSS length string (e.g. "615pt", "210mm") to SVG user
+        // units (px at 96 dpi).  Bare numbers and "px" are returned as-is.
+        function svgLengthToPx(attr) {
+          if (!attr) return 0;
+          const val  = parseFloat(attr);
+          if (!val)  return 0;
+          const unit = attr.trim().replace(/^[\d.\s+-]+/, '').toLowerCase();
+          const PX_PER_UNIT = { px: 1, pt: 96 / 72, pc: 16, mm: 96 / 25.4, cm: 96 / 2.54, 'in': 96 };
+          return val * (PX_PER_UNIT[unit] ?? 1);
+        }
+
         const parser = new DOMParser();
         const doc    = parser.parseFromString(svgText, 'image/svg+xml');
         const svgEl  = doc.documentElement;
-        let svgW = parseFloat(svgEl.getAttribute('width'))  || 0;
-        let svgH = parseFloat(svgEl.getAttribute('height')) || 0;
+        let svgW = svgLengthToPx(svgEl.getAttribute('width'));
+        let svgH = svgLengthToPx(svgEl.getAttribute('height'));
         const viewBox = svgEl.getAttribute('viewBox');
         if (viewBox) {
           const parts = viewBox.trim().split(/[\s,]+/);
