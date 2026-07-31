@@ -487,25 +487,66 @@ function loadSVGIntoCanvas(side, url) {
     Object.values(bbRects[side]).forEach((r) => fc.remove(r));
     bbRects[side] = {};
 
-    fabric.loadSVGFromURL(url, (objects, options) => {
-      const grp = fabric.util.groupSVGElements(objects, options);
-      grp.set({
-        selectable: false,
-        evented: false,
-        hasBorders: false,
-        hasControls: false,
-        originX: 'left',
-        originY: 'top',
-        left: 0,
-        top: 0,
+    // Fetch the SVG text so we can (a) read its natural dimensions and
+    // (b) pass it to the browser as a native image, which correctly renders
+    // wrapped text built with multiple <tspan> elements (each with its own
+    // x/y attributes), something Fabric.js's own SVG parser cannot do.
+    fetch(url)
+      .then((r) => r.text())
+      .then((svgText) => {
+        // Parse SVG dimensions from the document element.
+        const parser = new DOMParser();
+        const doc    = parser.parseFromString(svgText, 'image/svg+xml');
+        const svgEl  = doc.documentElement;
+        let svgW = parseFloat(svgEl.getAttribute('width'))  || 0;
+        let svgH = parseFloat(svgEl.getAttribute('height')) || 0;
+        const viewBox = svgEl.getAttribute('viewBox');
+        if (viewBox) {
+          const parts = viewBox.trim().split(/[\s,]+/);
+          if (parts.length >= 4) {
+            svgW = svgW || parseFloat(parts[2]) || svgW;
+            svgH = svgH || parseFloat(parts[3]) || svgH;
+          }
+        }
+        svgW = svgW || 400;
+        svgH = svgH || 300;
+
+        // Ensure the SVG root has explicit width/height so that browsers
+        // can report correct naturalWidth/naturalHeight on the img element.
+        svgEl.setAttribute('width',  svgW);
+        svgEl.setAttribute('height', svgH);
+        const serialisedSvg = new XMLSerializer().serializeToString(doc);
+
+        // Create a blob URL so the browser renders the SVG natively.
+        const blob    = new Blob([serialisedSvg], { type: 'image/svg+xml' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        fabric.Image.fromURL(blobUrl, (img) => {
+          URL.revokeObjectURL(blobUrl);
+          // Force Fabric.js to use the SVG's logical dimensions so that
+          // bounding-box coordinates stay in SVG-pixel space.
+          const scaleX = svgW / (img.width  || svgW);
+          const scaleY = svgH / (img.height || svgH);
+          img.set({
+            selectable: false,
+            evented:    false,
+            hasBorders: false,
+            hasControls: false,
+            originX:    'left',
+            originY:    'top',
+            left:       0,
+            top:        0,
+            scaleX,
+            scaleY,
+          });
+          fc.add(img);
+          svgImages[side] = img;
+          state.svgNaturalSize[side] = { w: svgW, h: svgH };
+          fitToCanvas(side);
+          fc.renderAll();
+          resolve();
+        });
       });
-      fc.add(grp);
-      svgImages[side] = grp;
-      state.svgNaturalSize[side] = { w: grp.width, h: grp.height };
-      fitToCanvas(side);
-      fc.renderAll();
-      resolve();
-    });
   });
 }
 
@@ -513,8 +554,9 @@ function fitToCanvas(side) {
   const fc  = fabricCanvases[side];
   const img = svgImages[side];
   if (!fc || !img) return;
-  const scaleX = fc.getWidth()  / (img.width  || 400);
-  const scaleY = fc.getHeight() / (img.height || 300);
+  const { w: svgW, h: svgH } = state.svgNaturalSize[side];
+  const scaleX = fc.getWidth()  / (svgW || 400);
+  const scaleY = fc.getHeight() / (svgH || 300);
   const scale  = Math.min(scaleX, scaleY) * 0.92;
   fc.setViewportTransform([scale, 0, 0, scale, 20, 20]);
   fc.renderAll();
