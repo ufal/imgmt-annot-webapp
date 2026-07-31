@@ -20,6 +20,7 @@ the same image.
 from __future__ import annotations
 
 import asyncio
+import argparse
 import json
 import re
 import urllib.parse
@@ -43,6 +44,15 @@ USERS_FILE = DATA_DIR / "users.json"
 BBS_DIR = DATA_DIR / "bbs"
 PAIRS_DIR = DATA_DIR / "pairs"
 FRONTEND_DIR = BASE_DIR / "frontend"
+
+
+def _set_data_dir(data_dir: Path) -> None:
+    """Configure the directory containing users, bounding boxes, and pairs."""
+    global DATA_DIR, USERS_FILE, BBS_DIR, PAIRS_DIR
+    DATA_DIR = data_dir.resolve()
+    USERS_FILE = DATA_DIR / "users.json"
+    BBS_DIR = DATA_DIR / "bbs"
+    PAIRS_DIR = DATA_DIR / "pairs"
 
 # ---------------------------------------------------------------------------
 # App
@@ -459,3 +469,20 @@ async def list_users():
             for uid, info in users.items()
         ]
     }
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run the IMGMT annotation webapp.")
+    parser.add_argument(
+        "data_dir",
+        nargs="?",
+        type=Path,
+        default=DATA_DIR,
+        help="Directory containing users.json, bbs/, and pairs/ (default: ./data).",
+    )
+    args = parser.parse_args()
+    _set_data_dir(args.data_dir)
+
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

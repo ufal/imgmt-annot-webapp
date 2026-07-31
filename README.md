@@ -63,7 +63,14 @@ pip install -r requirements.txt
 ### 2. Run the server
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+python main.py [DATA_DIR]
+```
+
+`DATA_DIR` is the directory containing `users.json`, `bbs/`, and `pairs/`.
+When omitted, the bundled `data/` directory is used. For example:
+
+```bash
+python main.py /path/to/my-data
 ```
 
 ### 3. Open the app
