@@ -9,6 +9,9 @@ from __future__ import annotations
 import json
 import os
 import re
+import asyncio
+import urllib.parse
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -144,6 +147,30 @@ class Annotations(BaseModel):
     images_identical: bool | None = None
 
 
+class TranslationRequest(BaseModel):
+    texts: list[str]
+
+
+def _translate_text(text: str) -> dict[str, str | None]:
+    """Translate one label to English using Google's free translation endpoint."""
+    if not text.strip():
+        return {"translation": None, "source_language": None}
+    query = urllib.parse.urlencode(
+        {"client": "gtx", "sl": "auto", "tl": "en", "dt": "t", "q": text}
+    )
+    request = urllib.request.Request(
+        f"https://translate.googleapis.com/translate_a/single?{query}",
+        headers={"User-Agent": "IMGMT-annot-webapp"},
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        result = json.loads(response.read().decode("utf-8"))
+    translated = "".join(part[0] for part in (result[0] or []) if part and part[0])
+    return {
+        "translation": translated or None,
+        "source_language": result[2] if len(result) > 2 else None,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -250,6 +277,25 @@ async def save_annotations(user_id: str, pair_id: str, payload: Annotations):
     with ann_file.open("w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, indent=2)
     return {"status": "saved"}
+
+
+# ------ Translation ----------------------------------------------------------
+
+
+@app.post("/api/translate")
+async def translate_labels(payload: TranslationRequest):
+    """Return English translations and detected languages for SVG labels."""
+    if len(payload.texts) > 100 or any(len(text) > 500 for text in payload.texts):
+        raise HTTPException(status_code=400, detail="Too many or too-long labels.")
+    results = []
+    for text in payload.texts:
+        try:
+            results.append(await asyncio.to_thread(_translate_text, text))
+        except Exception:
+            # Translation is an optional UI enhancement; keep individual failures
+            # from preventing the annotation panel from loading.
+            results.append({"translation": None, "source_language": None})
+    return {"translations": results}
 
 
 # ------ Users admin (read-only helper) --------------------------------------
