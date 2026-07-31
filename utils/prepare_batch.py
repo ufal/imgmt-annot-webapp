@@ -5,8 +5,8 @@ prepare_batch.py — Distribute image pairs across annotators and prepare the ba
 The script:
   1. Discovers all original-format JSON files under <data_dir>.
   2. Randomly samples language-pair JSONs across all image groups.
-  3. Assigns each image group to at most one annotator, until each annotator has
-     up to <n_pairs_per_annotator> pairs.
+  3. Assigns each image-language SVG to at most one annotator, until each
+     annotator has up to <n_pairs_per_annotator> pairs.
   4. Converts each assigned pair to the native webapp layout (bbs/, pairs/).
   5. Writes users.json (webapp user config) and mapping.json (pair → original
      file mapping) at the output root.
@@ -70,33 +70,45 @@ def _assign_pairs(
     n_per_annotator: int,
 ) -> dict[str, list[Path]]:
     """
-    Assign language-pair JSON files to annotators ensuring no image is shared
-    across annotators.  JSON files are shuffled before assignment so records
-    from all image groups can be sampled, while each image group is owned by
-    only one annotator.
+    Assign language-pair JSON files to annotators ensuring no image-language SVG
+    is shared across annotators. JSON files are shuffled before assignment so
+    records from all image groups can be sampled. Multiple annotators may use
+    one image group when their pairs use disjoint language SVGs.
 
     Returns {annotator: [list of assigned json_files]}.
     """
     assignment: dict[str, list[Path]] = {ann: [] for ann in annotators}
-    image_owners: dict[str, str] = {}
+    svg_owners: dict[tuple[str, str], str] = {}
     shuffled_jsons = list(all_jsons)
     random.shuffle(shuffled_jsons)
 
     for json_file in shuffled_jsons:
         image_id = json_file.parent.name
-        owner = image_owners.get(image_id)
-        if owner is not None:
-            if len(assignment[owner]) < n_per_annotator:
-                assignment[owner].append(json_file)
+        with json_file.open("r", encoding="utf-8") as fh:
+            pair_data = json.load(fh)
+        languages = {
+            pair_data["source_language"],
+            pair_data["target_language"],
+        }
+
+        # A pair is eligible for an annotator if every SVG it uses is either
+        # unclaimed or already claimed by that same annotator.
+        eligible = [
+            ann
+            for ann in annotators
+            if len(assignment[ann]) < n_per_annotator
+            and all(
+                svg_owners.get((image_id, language), ann) == ann
+                for language in languages
+            )
+        ]
+        if not eligible:
             continue
 
-        # Find the annotator with the fewest sampled records who still needs more.
-        eligible = [a for a in annotators if len(assignment[a]) < n_per_annotator]
-        if not eligible:
-            break
-        owner = min(eligible, key=lambda a: len(assignment[a]))
-        image_owners[image_id] = owner
+        owner = min(eligible, key=lambda ann: len(assignment[ann]))
         assignment[owner].append(json_file)
+        for language in languages:
+            svg_owners.setdefault((image_id, language), owner)
 
     return assignment
 
