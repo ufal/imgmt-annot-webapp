@@ -1,0 +1,12 @@
+{
+  "image_id": "img_003",
+  "language": "de",
+  "png": {},
+  "boxes": [
+    {"id": "1", "x": 18, "y": 24, "w": 200, "h": 20, "text": "Technisches Handbuch v3"},
+    {"id": "2", "x": 18, "y": 64, "w": 160, "h": 18, "text": "Sicherheitshinweise"},
+    {"id": "3", "x": 18, "y": 96, "w": 240, "h": 34, "text": "Trennen Sie immer die Stromversorgung vor Wartungsarbeiten."},
+    {"id": "4", "x": 18, "y": 144, "w": 100, "h": 18, "text": "Installation"},
+    {"id": "5", "x": 18, "y": 175, "w": 230, "h": 34, "text": "Montieren Sie das Gerät auf einer ebenen und stabilen Fläche."}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "image_id": "img_002",
+  "language": "de",
+  "png": {},
+  "boxes": [
+    {"id": "1", "x": 18, "y": 24, "w": 140, "h": 20, "text": "Produktkatalog"},
+    {"id": "2", "x": 18, "y": 64, "w": 90, "h": 18, "text": "Elektronik"},
+    {"id": "3", "x": 18, "y": 96, "w": 180, "h": 18, "text": "Laptop Pro X1 — 949 €"},
+    {"id": "4", "x": 18, "y": 116, "w": 210, "h": 18, "text": "Kabellose Kopfhörer — 139 €"},
+    {"id": "5", "x": 18, "y": 149, "w": 80, "h": 18, "text": "Zubehör"},
+    {"id": "6", "x": 18, "y": 179, "w": 120, "h": 18, "text": "USB-C-Hub — 45 €"},
+    {"id": "7", "x": 18, "y": 199, "w": 150, "h": 18, "text": "Laptop-Ständer — 35 €"}
+  ]
+}
