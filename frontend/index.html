@@ -83,7 +83,7 @@
   <!-- Mode tabs -->
   <div class="bg-white border-b border-slate-200 px-6 flex gap-6 text-sm text-slate-500">
     <button class="tab-btn active py-2 px-1" data-tab="bb">Bounding Box Correction</button>
-    <button class="tab-btn py-2 px-1" data-tab="align">Alignment Mapping</button>
+    <button class="tab-btn py-2 px-1" data-tab="align">Alignment &amp; Image Comparison</button>
   </div>
 
   <!-- Body -->
@@ -119,6 +119,26 @@
 
       <!-- Alignment tab panel -->
       <div id="panel-align" class="hidden flex-col flex-1 overflow-hidden">
+        <!-- Image identity -->
+        <div class="px-4 py-3 border-b border-slate-100">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-2">Image Identity</span>
+          <p class="text-xs text-slate-400 mb-2">Are the two images identical (regardless of text)?</p>
+          <div class="flex flex-col gap-1 text-xs">
+            <label class="flex items-center gap-2 cursor-pointer hover:text-slate-700">
+              <input type="radio" name="img-identical" id="img-identical-yes" value="true" class="accent-purple-600" />
+              <span>Identical</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer hover:text-slate-700">
+              <input type="radio" name="img-identical" id="img-identical-no" value="false" class="accent-purple-600" />
+              <span>Not identical</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer hover:text-slate-400">
+              <input type="radio" name="img-identical" id="img-identical-unset" value="" class="accent-purple-600" checked />
+              <span class="text-slate-400">Not assessed</span>
+            </label>
+          </div>
+        </div>
+        <!-- Alignments list -->
         <div class="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
           <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Alignments</span>
           <button id="add-align-btn"
@@ -487,25 +507,77 @@ function loadSVGIntoCanvas(side, url) {
     Object.values(bbRects[side]).forEach((r) => fc.remove(r));
     bbRects[side] = {};
 
-    fabric.loadSVGFromURL(url, (objects, options) => {
-      const grp = fabric.util.groupSVGElements(objects, options);
-      grp.set({
-        selectable: false,
-        evented: false,
-        hasBorders: false,
-        hasControls: false,
-        originX: 'left',
-        originY: 'top',
-        left: 0,
-        top: 0,
+    // Fetch the SVG text so we can (a) read its natural dimensions and
+    // (b) pass it to the browser as a native image, which correctly renders
+    // wrapped text built with multiple <tspan> elements (each with its own
+    // x/y attributes), something Fabric.js's own SVG parser cannot do.
+    fetch(url)
+      .then((r) => r.text())
+      .then((svgText) => {
+        // Parse SVG dimensions from the document element.
+        // Converts a CSS length string (e.g. "615pt", "210mm") to SVG user
+        // units (px at 96 dpi).  Bare numbers and "px" are returned as-is.
+        function svgLengthToPx(attr) {
+          if (!attr) return 0;
+          const val  = parseFloat(attr);
+          if (!val)  return 0;
+          const unit = attr.trim().replace(/^[\d.\s+-]+/, '').toLowerCase();
+          const PX_PER_UNIT = { px: 1, pt: 96 / 72, pc: 16, mm: 96 / 25.4, cm: 96 / 2.54, 'in': 96 };
+          return val * (PX_PER_UNIT[unit] ?? 1);
+        }
+
+        const parser = new DOMParser();
+        const doc    = parser.parseFromString(svgText, 'image/svg+xml');
+        const svgEl  = doc.documentElement;
+        let svgW = svgLengthToPx(svgEl.getAttribute('width'));
+        let svgH = svgLengthToPx(svgEl.getAttribute('height'));
+        const viewBox = svgEl.getAttribute('viewBox');
+        if (viewBox) {
+          const parts = viewBox.trim().split(/[\s,]+/);
+          if (parts.length >= 4) {
+            svgW = svgW || parseFloat(parts[2]) || svgW;
+            svgH = svgH || parseFloat(parts[3]) || svgH;
+          }
+        }
+        svgW = svgW || 400;
+        svgH = svgH || 300;
+
+        // Ensure the SVG root has explicit width/height so that browsers
+        // can report correct naturalWidth/naturalHeight on the img element.
+        svgEl.setAttribute('width',  svgW);
+        svgEl.setAttribute('height', svgH);
+        const serialisedSvg = new XMLSerializer().serializeToString(doc);
+
+        // Create a blob URL so the browser renders the SVG natively.
+        const blob    = new Blob([serialisedSvg], { type: 'image/svg+xml' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        fabric.Image.fromURL(blobUrl, (img) => {
+          URL.revokeObjectURL(blobUrl);
+          // Force Fabric.js to use the SVG's logical dimensions so that
+          // bounding-box coordinates stay in SVG-pixel space.
+          const scaleX = svgW / (img.width  || svgW);
+          const scaleY = svgH / (img.height || svgH);
+          img.set({
+            selectable: false,
+            evented:    false,
+            hasBorders: false,
+            hasControls: false,
+            originX:    'left',
+            originY:    'top',
+            left:       0,
+            top:        0,
+            scaleX,
+            scaleY,
+          });
+          fc.add(img);
+          svgImages[side] = img;
+          state.svgNaturalSize[side] = { w: svgW, h: svgH };
+          fitToCanvas(side);
+          fc.renderAll();
+          resolve();
+        });
       });
-      fc.add(grp);
-      svgImages[side] = grp;
-      state.svgNaturalSize[side] = { w: grp.width, h: grp.height };
-      fitToCanvas(side);
-      fc.renderAll();
-      resolve();
-    });
   });
 }
 
@@ -513,8 +585,9 @@ function fitToCanvas(side) {
   const fc  = fabricCanvases[side];
   const img = svgImages[side];
   if (!fc || !img) return;
-  const scaleX = fc.getWidth()  / (img.width  || 400);
-  const scaleY = fc.getHeight() / (img.height || 300);
+  const { w: svgW, h: svgH } = state.svgNaturalSize[side];
+  const scaleX = fc.getWidth()  / (svgW || 400);
+  const scaleY = fc.getHeight() / (svgH || 300);
   const scale  = Math.min(scaleX, scaleY) * 0.92;
   fc.setViewportTransform([scale, 0, 0, scale, 20, 20]);
   fc.renderAll();
@@ -624,6 +697,13 @@ function renderBBPanel(side) {
 }
 
 function renderAlignPanel() {
+  // Sync image-identity radio buttons
+  const val = state.annotations?.images_identical;
+  const radioVal = val === true ? 'true' : val === false ? 'false' : '';
+  document.querySelectorAll('input[name="img-identical"]').forEach((r) => {
+    r.checked = r.value === radioVal;
+  });
+
   const ul         = $('#align-list');
   const alignments = state.annotations?.alignments ?? [];
   ul.innerHTML = '';
@@ -939,6 +1019,18 @@ function deleteBox(side, id) {
   renderSidePanels();
   scheduleSave();
 }
+
+// =========================================================================
+// Image identity radio buttons
+// =========================================================================
+document.querySelectorAll('input[name="img-identical"]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    if (!state.annotations) return;
+    const v = radio.value;
+    state.annotations.images_identical = v === 'true' ? true : v === 'false' ? false : null;
+    scheduleSave();
+  });
+});
 
 // =========================================================================
 // Alignment modal

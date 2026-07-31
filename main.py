@@ -162,6 +162,7 @@ class Annotations(BaseModel):
     svgA: AnnotationSide
     svgB: AnnotationSide
     alignments: list[Alignment]
+    images_identical: bool | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +278,12 @@ async def get_annotations(user_id: str, pair_id: str):
     pair_file = _safe_path(PAIRS_DIR, pair_id, "alignments.json")
     if not pair_file.exists():
         # Return an empty skeleton if the pair hasn't been set up yet.
-        return {"svgA": {"boxes": []}, "svgB": {"boxes": []}, "alignments": []}
+        return {
+            "svgA": {"boxes": []},
+            "svgB": {"boxes": []},
+            "alignments": [],
+            "images_identical": None,
+        }
     with pair_file.open("r", encoding="utf-8") as fh:
         aln_data = json.load(fh)
     image_id = aln_data["image_id"]
@@ -286,7 +292,12 @@ async def get_annotations(user_id: str, pair_id: str):
     src_bb_file = _safe_path(BBS_DIR, image_id, f"{src_lang}.json")
     tgt_bb_file = _safe_path(BBS_DIR, image_id, f"{tgt_lang}.json")
     if not src_bb_file.exists() or not tgt_bb_file.exists():
-        return {"svgA": {"boxes": []}, "svgB": {"boxes": []}, "alignments": []}
+        return {
+            "svgA": {"boxes": []},
+            "svgB": {"boxes": []},
+            "alignments": [],
+            "images_identical": aln_data.get("images_identical"),
+        }
     with src_bb_file.open("r", encoding="utf-8") as fh:
         src_bb_data = json.load(fh)
     with tgt_bb_file.open("r", encoding="utf-8") as fh:
@@ -322,6 +333,7 @@ async def get_annotations(user_id: str, pair_id: str):
         "svgA": {"boxes": boxes_a},
         "svgB": {"boxes": boxes_b},
         "alignments": alignments,
+        "images_identical": aln_data.get("images_identical"),
     }
 
 
@@ -377,6 +389,7 @@ async def save_annotations(user_id: str, pair_id: str, payload: Annotations):
         }
         for a in data["alignments"]
     ]
+    aln_data["images_identical"] = data["images_identical"]
     aln_file.parent.mkdir(parents=True, exist_ok=True)
     with aln_file.open("w", encoding="utf-8") as fh:
         json.dump(aln_data, fh, ensure_ascii=False, indent=2)
