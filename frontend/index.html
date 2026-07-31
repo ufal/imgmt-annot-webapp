@@ -1016,7 +1016,7 @@ $('#edit-save').addEventListener('click', () => {
   box.height = parseFloat($('#edit-h').value) || 0;
 
   $('#edit-modal').classList.add('hidden');
-  refreshTranslations();
+  refreshTranslations().then(() => renderSidePanels());
   renderBoxes(side);
   renderSidePanels();
   scheduleSave();

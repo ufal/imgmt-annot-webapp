@@ -6,10 +6,10 @@ Provides REST endpoints to support the annotation correction tool.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import re
-import asyncio
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -287,14 +287,18 @@ async def translate_labels(payload: TranslationRequest):
     """Return English translations and detected languages for SVG labels."""
     if len(payload.texts) > 100 or any(len(text) > 500 for text in payload.texts):
         raise HTTPException(status_code=400, detail="Too many or too-long labels.")
-    results = []
-    for text in payload.texts:
-        try:
-            results.append(await asyncio.to_thread(_translate_text, text))
-        except Exception:
-            # Translation is an optional UI enhancement; keep individual failures
-            # from preventing the annotation panel from loading.
-            results.append({"translation": None, "source_language": None})
+    semaphore = asyncio.Semaphore(10)
+
+    async def translate_one(text: str) -> dict[str, str | None]:
+        async with semaphore:
+            try:
+                return await asyncio.to_thread(_translate_text, text)
+            except Exception:
+                # Translation is an optional UI enhancement; keep individual failures
+                # from preventing the annotation panel from loading.
+                return {"translation": None, "source_language": None}
+
+    results = await asyncio.gather(*(translate_one(text) for text in payload.texts))
     return {"translations": results}
 
 
