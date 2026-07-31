@@ -10,6 +10,7 @@ The web application to manually annotate or post-edit pairs of SVGs with text th
 - **Side-by-side SVG view** using interactive [Fabric.js](http://fabricjs.com/) canvases with pan and zoom.
 - **Bounding Box Correction tab**
   - Sidebar listing all annotated text fields for SVG A and SVG B.
+  - English translations for non-English labels are available in each label's tooltip.
   - Click a list item to highlight the corresponding bounding box on the canvas.
   - Double-click to open an edit modal (change text, coordinates, size, or delete the box).
   - Draw new bounding boxes directly on the canvas (`+A` / `+B` buttons).
@@ -139,6 +140,7 @@ If a pair directory has no `annotations.json`, the app starts with an empty anno
 | `GET`  | `/api/users/{user_id}/pairs/{pair_id}/svg/{side}` | Serve SVG (`side` = `A` or `B`) |
 | `GET`  | `/api/users/{user_id}/pairs/{pair_id}/annotations` | Fetch annotation JSON |
 | `PUT`  | `/api/users/{user_id}/pairs/{pair_id}/annotations` | Save annotation JSON |
+| `POST` | `/api/translate` | Translate labels to English and detect their source language |
 
 Interactive API docs are available at **http://localhost:8000/docs**.
 
