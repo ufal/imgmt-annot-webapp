@@ -141,6 +141,7 @@ class Annotations(BaseModel):
     svgA: AnnotationSide
     svgB: AnnotationSide
     alignments: list[Alignment]
+    images_identical: bool | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -229,7 +230,7 @@ async def get_annotations(user_id: str, pair_id: str):
     ann_file = _annotation_path(user_id, pair_id)
     if not ann_file.exists():
         # Return an empty skeleton if the file doesn't exist yet.
-        return {"svgA": {"boxes": []}, "svgB": {"boxes": []}, "alignments": []}
+        return {"svgA": {"boxes": []}, "svgB": {"boxes": []}, "alignments": [], "images_identical": None}
     with ann_file.open("r", encoding="utf-8") as fh:
         return json.load(fh)
 
