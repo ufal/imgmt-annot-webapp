@@ -1,0 +1,317 @@
+{
+    "alignment_method": "ambiguous_spatial_method",
+    "source_language": "it",
+    "source_PNG": {
+        "size": {
+            "width": 1285.06,
+            "height": 875
+        },
+        "wikimedia_url": "https://commons.wikimedia.org/wiki/File:Duchy_of_Benevento_It.svg",
+        "licensing": {
+            "license": "CC BY-SA 4.0",
+            "original_license": "CC BY 3.0",
+            "author": "Alfredo Zazo and sculpted by Michelangelo Parlato."
+        }
+    },
+    "source_texts": [
+        "BOVIANUM",
+        "DUCATO DI SPOLETO",
+        "DUCATO ROMANO",
+        "BENEVENTUM",
+        "LARINUM",
+        "SEPONTUM",
+        "ORTONA",
+        "LUCERIA",
+        "CANNAE",
+        "BARIUM",
+        "VENAFRUM",
+        "CAPUA",
+        "SALERNUM",
+        "CONSA",
+        "POTENTIA",
+        "BUXENTUM",
+        "BENEVENTO",
+        "Mare Ionio",
+        "Mare Tirreno",
+        "DUCATO DI"
+    ],
+    "source_text_bounding_boxes": [
+        {
+            "x": 301.0,
+            "y": 288.42,
+            "w": 79.82,
+            "h": 12.55
+        },
+        {
+            "x": 34.69,
+            "y": 22.19,
+            "w": 153.71,
+            "h": 56.32
+        },
+        {
+            "x": 34.53,
+            "y": 190.59,
+            "w": 127.26,
+            "h": 56.32
+        },
+        {
+            "x": 346.46,
+            "y": 387.72,
+            "w": 127.51,
+            "h": 13.83
+        },
+        {
+            "x": 392.56,
+            "y": 201.8,
+            "w": 66.55,
+            "h": 12.3
+        },
+        {
+            "x": 578.35,
+            "y": 224.33,
+            "w": 81.9,
+            "h": 12.55
+        },
+        {
+            "x": 250.01,
+            "y": 56.58,
+            "w": 63.11,
+            "h": 12.55
+        },
+        {
+            "x": 513.13,
+            "y": 261.64,
+            "w": 63.61,
+            "h": 12.52
+        },
+        {
+            "x": 699.42,
+            "y": 322.74,
+            "w": 60.15,
+            "h": 12.48
+        },
+        {
+            "x": 879.75,
+            "y": 367.54,
+            "w": 57.35,
+            "h": 12.3
+        },
+        {
+            "x": 169.14,
+            "y": 281.92,
+            "w": 81.57,
+            "h": 12.3
+        },
+        {
+            "x": 248.46,
+            "y": 398.71,
+            "w": 49.28,
+            "h": 12.52
+        },
+        {
+            "x": 386.26,
+            "y": 499.15,
+            "w": 79.71,
+            "h": 12.52
+        },
+        {
+            "x": 547.2,
+            "y": 442.82,
+            "w": 51.33,
+            "h": 12.55
+        },
+        {
+            "x": 590.34,
+            "y": 485.28,
+            "w": 75.16,
+            "h": 12.55
+        },
+        {
+            "x": 626.58,
+            "y": 650.17,
+            "w": 81.46,
+            "h": 12.3
+        },
+        {
+            "x": 42.02,
+            "y": 742.33,
+            "w": 245.45,
+            "h": 28.68
+        },
+        {
+            "x": 1010.76,
+            "y": 712.96,
+            "w": 88.97,
+            "h": 79.68
+        },
+        {
+            "x": 112.67,
+            "y": 567.99,
+            "w": 118.32,
+            "h": 79.68
+        },
+        {
+            "x": 692.73,
+            "y": 724.24,
+            "w": 131.94,
+            "h": 105.28
+        }
+    ],
+    "target_language": "nl",
+    "target_PNG": {
+        "size": {
+            "width": 1285.06,
+            "height": 875
+        },
+        "wikimedia_url": "https://commons.wikimedia.org/wiki/File:Duchy_of_Benevento_c700-nl.svg",
+        "licensing": {
+            "license": "CC BY-SA 4.0",
+            "original_license": "CC BY 3.0",
+            "author": "Alfredo Zazo and sculpted by Michelangelo Parlato."
+        }
+    },
+    "target_texts": [
+        "Hertogdom Napels",
+        "Hertogdom SPOLETO",
+        "Hertogdom ROMA",
+        "Calore Hirpino",
+        "LARINO",
+        "SIPONTO",
+        "ORTONA",
+        "LUCERA",
+        "CANNAS",
+        "BARI",
+        "Río Gari",
+        "Río Clanio",
+        "SALERNO",
+        "CONZA",
+        "POTENZA",
+        "PIXUNTE-BUXENTO (POLICASTRO)",
+        "Río Volturno",
+        "Ionische Zee",
+        "Tyrrheense Zee",
+        "Hertogdom CALABRIA"
+    ],
+    "target_text_bounding_boxes": [
+        {
+            "x": 101.0,
+            "y": 526.82,
+            "w": 131.56,
+            "h": 62.58
+        },
+        {
+            "x": 37.17,
+            "y": 42.84,
+            "w": 131.44,
+            "h": 56.82
+        },
+        {
+            "x": 0.9,
+            "y": 240.12,
+            "w": 131.44,
+            "h": 56.82
+        },
+        {
+            "x": 434.68,
+            "y": 383.68,
+            "w": 48.73,
+            "h": 65.93
+        },
+        {
+            "x": 392.56,
+            "y": 201.55,
+            "w": 55.34,
+            "h": 12.55
+        },
+        {
+            "x": 601.13,
+            "y": 224.33,
+            "w": 67.18,
+            "h": 12.55
+        },
+        {
+            "x": 250.01,
+            "y": 56.58,
+            "w": 63.11,
+            "h": 12.55
+        },
+        {
+            "x": 513.13,
+            "y": 261.64,
+            "w": 57.43,
+            "h": 12.52
+        },
+        {
+            "x": 701.49,
+            "y": 326.88,
+            "w": 60.18,
+            "h": 12.48
+        },
+        {
+            "x": 879.75,
+            "y": 367.54,
+            "w": 34.19,
+            "h": 12.04
+        },
+        {
+            "x": 156.95,
+            "y": 262.4,
+            "w": 14.87,
+            "h": 44.83
+        },
+        {
+            "x": 219.28,
+            "y": 398.18,
+            "w": 53.7,
+            "h": 21.42
+        },
+        {
+            "x": 394.55,
+            "y": 507.41,
+            "w": 68.5,
+            "h": 12.55
+        },
+        {
+            "x": 547.2,
+            "y": 449.04,
+            "w": 51.47,
+            "h": 12.55
+        },
+        {
+            "x": 590.34,
+            "y": 485.28,
+            "w": 68.56,
+            "h": 12.55
+        },
+        {
+            "x": 610.7,
+            "y": 648.84,
+            "w": 141.71,
+            "h": 36.34
+        },
+        {
+            "x": 247.11,
+            "y": 296.94,
+            "w": 55.35,
+            "h": 42.07
+        },
+        {
+            "x": 1026.73,
+            "y": 728.16,
+            "w": 117.18,
+            "h": 64.33
+        },
+        {
+            "x": 203.49,
+            "y": 737.22,
+            "w": 158.31,
+            "h": 63.81
+        },
+        {
+            "x": 710.62,
+            "y": 780.48,
+            "w": 191.36,
+            "h": 56.82
+        }
+    ]
+}

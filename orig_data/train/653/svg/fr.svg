@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="836.29999"
+   height="857.27002"
+   id="svg2"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="FluorescenceFilters-fr.svg">
+  <metadata
+     id="metadata72">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1230"
+     inkscape:window-height="925"
+     id="namedview70"
+     showgrid="false"
+     inkscape:zoom="0.55058498"
+     inkscape:cx="580.10117"
+     inkscape:cy="400.98978"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 428.63501 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="836.29999 : 428.63501 : 1"
+       inkscape:persp3d-origin="418.14999 : 285.75667 : 1"
+       id="perspective74" />
+    <linearGradient
+       id="linearGradient9357">
+      <stop
+         id="stop9359"
+         style="stop-color:#6cff3b;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop9361"
+         style="stop-color:#6cff3b;stop-opacity:0"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient6661">
+      <stop
+         id="stop6663"
+         style="stop-color:#ffec00;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop6665"
+         style="stop-color:#ffec00;stop-opacity:0"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2760">
+      <stop
+         id="stop2762"
+         style="stop-color:#a832ff;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop2768"
+         style="stop-color:#0000ff;stop-opacity:1"
+         offset="0.25" />
+      <stop
+         id="stop2770"
+         style="stop-color:#ffff00;stop-opacity:1"
+         offset="0.5" />
+      <stop
+         id="stop2772"
+         style="stop-color:#ff0000;stop-opacity:1"
+         offset="0.75" />
+      <stop
+         id="stop2764"
+         style="stop-color:#a832ff;stop-opacity:1"
+         offset="1" />
+    </linearGradient>
+    <radialGradient
+       cx="878.91907"
+       cy="379.0625"
+       r="26.885874"
+       fx="878.91907"
+       fy="379.0625"
+       id="radialGradient8466"
+       xlink:href="#linearGradient6661"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.25395,0,0,1.37745,-337.484,-145.933)" />
+    <radialGradient
+       cx="312.13715"
+       cy="958.41797"
+       r="20.203051"
+       fx="312.13715"
+       fy="958.41797"
+       id="radialGradient9369"
+       xlink:href="#linearGradient9357"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0,-1.29268,1,0,-646.281,1361.91)" />
+    <linearGradient
+       x1="385.71426"
+       y1="295.06073"
+       x2="385.71426"
+       y2="398.43243"
+       id="linearGradient1989"
+       xlink:href="#linearGradient2760"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.483562,0,0,0.451388,357.233,223.738)" />
+  </defs>
+  <rect
+     width="301.19046"
+     height="46.42857"
+     x="373.81137"
+     y="356.99634"
+     id="rect1872"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:url(#linearGradient1989) #000000;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <g
+     transform="matrix(1.57652,0,0,1.57652,-464.249,-230.906)"
+     id="g8455"
+     style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">
+    <path
+       d="m 764.58929,354.51786 c -36.67698,7.22323 -11.50184,27.67904 -8.3125,43.375 l 16.65625,0 c 3.19766,-15.71493 28.50669,-36.67771 -8.34375,-43.375 z"
+       id="path3094"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffec00;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 756.797,397.87735 c 0.0574,0.30165 0.10483,0.60959 0.14649,0.9076 0,0 -0.37923,17.53832 0,20.02967 0.45134,2.96506 15.06475,2.32507 15.29356,0 0.20335,-2.06635 0,-20.02967 0,-20.02967 0.0417,-0.29874 0.11811,-0.60483 0.17578,-0.9076 l -15.61583,0 z"
+       id="path3990"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#bbbbbb;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.96898299px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 764.55809,339.17151 c -62.63008,12.33448 -19.64069,47.26508 -14.19453,74.0677 l 28.44243,0 c 5.46036,-26.83501 48.67839,-62.63132 -14.2479,-74.0677 z"
+       id="path5774"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:url(#radialGradient8466) #000000;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 756.96429,399.50504 15.26786,3.21429"
+       id="path6673"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 756.96429,413.25504 15.26786,3.21429"
+       id="path6675"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 756.96429,408.79075 15.26786,3.21429"
+       id="path6677"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 756.96429,404.23718 15.26786,3.21429"
+       id="path6679"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 756.96429,417.18361 13.66072,2.67858"
+       id="path6681"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 761.83037,420.95594 c 0.7307,2.78602 4.12855,2.47443 4.84375,-0.0893"
+       id="path7568"
+       style="font-size:17.76063728px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  </g>
+  <g
+     transform="translate(-49.612,-208.178)"
+     id="g9365"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">
+    <path
+       d="m 332.3402,958.41797 c 0.004,11.16032 -9.04273,20.20941 -20.20305,20.20941 -11.16032,0 -20.20656,-9.04909 -20.20305,-20.20941 -0.004,-11.16032 9.04273,-20.20941 20.20305,-20.20941 11.16032,0 20.20656,9.04909 20.20305,20.20941 l 0,0 z"
+       id="path8468"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#6cff3b;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+    <path
+       d="m 332.3402,958.41797 c 0.004,11.16032 -9.04273,20.20941 -20.20305,20.20941 -11.16032,0 -20.20656,-9.04909 -20.20305,-20.20941 -0.004,-11.16032 9.04273,-20.20941 20.20305,-20.20941 11.16032,0 20.20656,9.04909 20.20305,20.20941 l 0,0 z"
+       transform="matrix(2.05,0,0,2.05,-327.744,-1006.34)"
+       id="path8470"
+       style="font-size:13.65853691px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:url(#radialGradient9369) #000000;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  </g>
+  <g
+     transform="matrix(1,0,0,0.362852,-28.5696,237.323)"
+     id="g14873"
+     style="font-size:46.48290634px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">
+    <path
+       d="m 296.29776,380.09114 0,13.77974 0,413.39226 10,0 0,-399.61252 80,0 0,-27.55948 -85,0 -5,0 z"
+       id="path12034"
+       style="font-size:46.48290634px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#342d97;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  </g>
+  <rect
+     width="20.203051"
+     height="178.797"
+     x="355.28839"
+     y="290.81049"
+     id="rect9371"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <rect
+     width="19.349697"
+     height="379.97415"
+     x="796.46173"
+     y="-451.04022"
+     transform="matrix(0,1,-1,0,0,0)"
+     id="rect10262"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:2.85334992;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="m 259.91184,676.75381 25.63263,0 -12.81631,23.48605 -12.81632,-23.48605 z"
+     id="path15768"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#342d97;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="m 242.72816,200.23986 0,500 10,0 0.1875,-499.03963 -10.1875,-0.96037 z"
+     id="path16655"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#8be164;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <rect
+     width="20.203051"
+     height="178.797"
+     x="-284.50085"
+     y="172.70023"
+     transform="matrix(0,-1,1,0,0,0)"
+     id="rect10260"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <rect
+     width="19.702532"
+     height="174.36942"
+     x="442.73529"
+     y="-3.9259984"
+     transform="matrix(0.709214,0.704993,-0.710215,0.703985,0,0)"
+     id="rect10258"
+     style="font-size:28.00038338px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.95045996;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="m 267.72816,680.23986 10,0 0,-40 -10,0 0,40 z"
+     id="path3403"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#342d97;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <rect
+     width="163.64471"
+     height="111.11678"
+     rx="36.36549"
+     ry="36.36549"
+     x="177.72816"
+     y="530.23987"
+     id="rect17542"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <g
+     transform="translate(147.568,56.137)"
+     id="g21094" />
+  <path
+     d="m 361.26679,239.10957 7.44423,9.83936 -18.21118,6.31881 10.76695,-16.15817 z"
+     id="path21098"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="M 362.86488,245.56801 423.57916,198.7823"
+     id="path21985"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="m 396.82191,463.03809 -7.96009,9.4269 -10.17128,-16.37436 18.13137,6.94746 z"
+     id="path22892"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="m 385.69655,461.93513 58.99905,48.93096"
+     id="path22894"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="m 208.81936,395.08154 0.008,-12.33813 18.33156,5.96058 -18.33959,6.37755 z"
+     id="path22920"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="m 218.03536,388.75259 -76.6468,0.62853"
+     id="path22922"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <path
+     d="m 234.91184,58.725907 25.63263,0 -12.81631,-23.48605 -12.81632,23.48605 z"
+     id="path2841"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#8be164;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <text
+     x="6.3805099"
+     y="379.27802"
+     id="text2573"
+     xml:space="preserve"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'"><tspan
+       x="6.3805099"
+       y="379.27802"
+       id="tspan2575"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">miroir dichroïque</tspan></text>
+  <text
+     x="446.38"
+     y="529.27802"
+     id="text2577"
+     xml:space="preserve"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'"><tspan
+       x="446.38"
+       y="529.27802"
+       id="tspan2579"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">filtre d'excitation</tspan></text>
+  <text
+     x="425.85498"
+     y="192.27002"
+     id="text2581"
+     xml:space="preserve"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'"><tspan
+       x="425.85498"
+       y="192.27002"
+       id="tspan2583"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">filtre barrière</tspan></text>
+  <text
+     x="210.53462"
+     y="594.45001"
+     id="text2585"
+     xml:space="preserve"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'"><tspan
+       x="210.53462"
+       y="594.45001"
+       id="tspan2587"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">objectif</tspan></text>
+  <text
+     x="201.44139"
+     y="843.03198"
+     id="text2589"
+     xml:space="preserve"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'"
+     sodipodi:linespacing="125%"><tspan
+       x="201.44139"
+       y="843.03198"
+       id="tspan2591"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">spécimen</tspan></text>
+  <text
+     x="195.54233"
+     y="29.849476"
+     id="text2593"
+     xml:space="preserve"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'"><tspan
+       x="195.54233"
+       y="29.849476"
+       id="tspan2595"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">capteur</tspan></text>
+  <text
+     x="670.73102"
+     y="469.27802"
+     id="text2597"
+     xml:space="preserve"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'"><tspan
+       x="670.73102"
+       y="469.27802"
+       id="tspan2599"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">source</tspan></text>
+  <path
+     d="m 242.72816,57.372631 0,54.999999 10.0625,0 0,-54.999999 -10.0625,0 z"
+     id="path3387"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#8be164;fill-opacity:1;fill-rule:evenodd;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <rect
+     width="163.64471"
+     height="111.11678"
+     rx="36.36549"
+     ry="36.36549"
+     x="177.5714"
+     y="110.23986"
+     id="rect2601"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'" />
+  <text
+     x="217.60757"
+     y="174.84967"
+     id="text3389"
+     xml:space="preserve"
+     style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'"><tspan
+       x="217.60757"
+       y="174.84967"
+       id="tspan3391"
+       style="font-size:28px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:DejaVu Sans Condensed;-inkscape-font-specification:'DejaVu Sans Condensed,'">oculaire</tspan></text>
+</svg>

@@ -1,0 +1,149 @@
+{
+    "alignment_method": "unambiguous_spatial_method",
+    "source_language": "de",
+    "source_PNG": {
+        "size": {
+            "width": 820,
+            "height": 840
+        },
+        "wikimedia_url": "https://commons.wikimedia.org/wiki/File:Fluoreszenzmikroskopie_2008-09-28.svg",
+        "licensing": {
+            "license": "CC BY-SA 4.0",
+            "original_license": "CC BY-SA 3.0",
+            "author": "derivative work: Henry Mühlpfordt / FluorescenceFilters.svg: Krzysztof Blachnicki"
+        }
+    },
+    "source_texts": [
+        "Strahlteiler",
+        "Anregungsfilter",
+        "Sperrfilter",
+        "Objektiv",
+        "Präparat",
+        "Detektor",
+        "Lichtquelle",
+        "Okular"
+    ],
+    "source_text_bounding_boxes": [
+        {
+            "x": 8.05,
+            "y": 350.79,
+            "w": 150.74,
+            "h": 21.26
+        },
+        {
+            "x": 437.74,
+            "y": 497.64,
+            "w": 210.7,
+            "h": 26.64
+        },
+        {
+            "x": 419.07,
+            "y": 167.42,
+            "w": 137.49,
+            "h": 26.5
+        },
+        {
+            "x": 207.83,
+            "y": 561.63,
+            "w": 112.93,
+            "h": 26.51
+        },
+        {
+            "x": 205.59,
+            "y": 805.97,
+            "w": 113.57,
+            "h": 25.6
+        },
+        {
+            "x": 194.28,
+            "y": 8.4,
+            "w": 117.47,
+            "h": 21.26
+        },
+        {
+            "x": 659.9,
+            "y": 438.98,
+            "w": 143.45,
+            "h": 26.36
+        },
+        {
+            "x": 214.77,
+            "y": 150.48,
+            "w": 89.47,
+            "h": 21.26
+        }
+    ],
+    "target_language": "fr",
+    "target_PNG": {
+        "size": {
+            "width": 820,
+            "height": 840
+        },
+        "wikimedia_url": "https://commons.wikimedia.org/wiki/File:FluorescenceFilters-fr.svg",
+        "licensing": {
+            "license": "CC BY-SA 4.0",
+            "original_license": "Public domain",
+            "author": "Zeugma fr"
+        }
+    },
+    "target_texts": [
+        "miroir dichroïque",
+        "filtre d'excitation",
+        "filtre barrière",
+        "objectif",
+        "spécimen",
+        "capteur",
+        "source",
+        "oculaire"
+    ],
+    "target_text_bounding_boxes": [
+        {
+            "x": 8.73,
+            "y": 350.79,
+            "w": 230.61,
+            "h": 26.36
+        },
+        {
+            "x": 438.3,
+            "y": 497.64,
+            "w": 228.17,
+            "h": 21.39
+        },
+        {
+            "x": 418.19,
+            "y": 165.94,
+            "w": 179.87,
+            "h": 22.87
+        },
+        {
+            "x": 207.71,
+            "y": 561.5,
+            "w": 101.28,
+            "h": 26.64
+        },
+        {
+            "x": 198.85,
+            "y": 803.59,
+            "w": 126.1,
+            "h": 27.97
+        },
+        {
+            "x": 193.01,
+            "y": 9.98,
+            "w": 102.79,
+            "h": 24.78
+        },
+        {
+            "x": 658.69,
+            "y": 444.44,
+            "w": 87.84,
+            "h": 15.8
+        },
+        {
+            "x": 214.64,
+            "y": 150.48,
+            "w": 105.13,
+            "h": 21.26
+        }
+    ]
+}
