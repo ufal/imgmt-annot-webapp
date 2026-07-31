@@ -1,0 +1,63 @@
+{
+  "image_id": "img_001",
+  "language": "en",
+  "png": {},
+  "boxes": [
+    {
+      "id": "1",
+      "x": 18.0,
+      "y": 24.0,
+      "w": 160.0,
+      "h": 20.0,
+      "text": "Annual Report 2024"
+    },
+    {
+      "id": "2",
+      "x": 18.0,
+      "y": 64.0,
+      "w": 100.0,
+      "h": 18.0,
+      "text": "Introduction"
+    },
+    {
+      "id": "3",
+      "x": 18.0,
+      "y": 96.0,
+      "w": 200.0,
+      "h": 34.0,
+      "text": "This document summarises our key achievements this year."
+    },
+    {
+      "id": "4",
+      "x": 18.0,
+      "y": 144.0,
+      "w": 150.0,
+      "h": 18.0,
+      "text": "Financial Overview"
+    },
+    {
+      "id": "5",
+      "x": 18.0,
+      "y": 175.0,
+      "w": 210.0,
+      "h": 34.0,
+      "text": "Revenue grew by 15% compared to the previous fiscal year."
+    },
+    {
+      "id": "6",
+      "x": 18.0,
+      "y": 224.0,
+      "w": 100.0,
+      "h": 18.0,
+      "text": "Conclusion"
+    },
+    {
+      "id": "7",
+      "x": 18.0,
+      "y": 249.0,
+      "w": 210.0,
+      "h": 18.0,
+      "text": "We remain committed to growth."
+    }
+  ]
+}

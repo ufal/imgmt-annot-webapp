@@ -5,6 +5,6 @@
   },
   "annotator1": {
     "display_name": "Annotator One",
-    "datasets": ["pair_001"]
+    "datasets": ["pair_003"]
   }
 }

@@ -2,19 +2,31 @@
 IMGMT Annotation Webapp — FastAPI Backend
 ==========================================
 Provides REST endpoints to support the annotation correction tool.
+
+Data layout
+-----------
+  data/
+    bbs/<image_id>/<lang>.json   — bounding boxes shared across all pairs for that image
+    bbs/<image_id>/<lang>.svg    — SVG shared across all pairs for that image
+    pairs/<pair_id>/
+        alignments.json          — pair-specific alignments + image/lang metadata
+    users.json                   — user → assigned pair IDs mapping
+
+Writing bounding boxes to the per-image bbs/ files (rather than per-pair copies)
+means that BB corrections are shared automatically across every pair that references
+the same image.
 """
 
 from __future__ import annotations
 
 import json
-import os
 import re
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -25,7 +37,8 @@ from pydantic import BaseModel
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 USERS_FILE = DATA_DIR / "users.json"
-DATASETS_DIR = DATA_DIR / "datasets"
+BBS_DIR = DATA_DIR / "bbs"
+PAIRS_DIR = DATA_DIR / "pairs"
 FRONTEND_DIR = BASE_DIR / "frontend"
 
 # ---------------------------------------------------------------------------
@@ -83,20 +96,6 @@ def _safe_path(base: Path, *parts: str) -> Path:
     return candidate
 
 
-def _user_dataset_dir(user_id: str) -> Path:
-    return _safe_path(DATASETS_DIR, user_id)
-
-
-def _annotation_path(user_id: str, pair_id: str) -> Path:
-    return _safe_path(DATASETS_DIR, user_id, pair_id, "annotations.json")
-
-
-def _svg_path(user_id: str, pair_id: str, side: str) -> Path:
-    """Return path to svgA.svg or svgB.svg for a given user/pair."""
-    filename = "svgA.svg" if side == "A" else "svgB.svg"
-    return _safe_path(DATASETS_DIR, user_id, pair_id, filename)
-
-
 def _validate_user(user_id: str) -> dict[str, Any]:
     """Return user config or raise 404."""
     users = _load_users()
@@ -113,6 +112,28 @@ def _validate_pair(user_id: str, pair_id: str) -> None:
             status_code=403,
             detail=f"Pair '{pair_id}' is not assigned to user '{user_id}'.",
         )
+
+
+def _load_pair_meta(pair_id: str) -> dict[str, Any]:
+    """
+    Load pair metadata from pairs/<pair_id>/alignments.json or raise 404.
+
+    The returned dict contains at minimum: image_id, src_lang, tgt_lang, alignments.
+    """
+    pair_file = _safe_path(PAIRS_DIR, pair_id, "alignments.json")
+    if not pair_file.exists():
+        raise HTTPException(
+            status_code=404, detail=f"Pair '{pair_id}' data not found."
+        )
+    with pair_file.open("r", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def _strip_side_prefix(box_id: str) -> str:
+    """Strip the leading 'A' or 'B' (case-insensitive) added by the webapp format."""
+    if box_id and box_id[0] in "ABab":
+        return box_id[1:]
+    return box_id
 
 
 # ---------------------------------------------------------------------------
@@ -186,13 +207,30 @@ async def list_pairs(user_id: str):
     user = _validate_user(user_id)
     pairs = []
     for pair_id in user.get("datasets", []):
-        pair_dir = _safe_path(DATASETS_DIR, user_id, pair_id)
+        pair_file = _safe_path(PAIRS_DIR, pair_id, "alignments.json")
+        if pair_file.exists():
+            with pair_file.open("r", encoding="utf-8") as fh:
+                meta = json.load(fh)
+            image_id = meta.get("image_id", "")
+            src_lang = meta.get("src_lang", "")
+            tgt_lang = meta.get("tgt_lang", "")
+            try:
+                has_svgA = _safe_path(BBS_DIR, image_id, f"{src_lang}.svg").exists()
+                has_svgB = _safe_path(BBS_DIR, image_id, f"{tgt_lang}.svg").exists()
+                has_annotations = (
+                    _safe_path(BBS_DIR, image_id, f"{src_lang}.json").exists()
+                    and _safe_path(BBS_DIR, image_id, f"{tgt_lang}.json").exists()
+                )
+            except HTTPException:
+                has_svgA = has_svgB = has_annotations = False
+        else:
+            has_svgA = has_svgB = has_annotations = False
         pairs.append(
             {
                 "pair_id": pair_id,
-                "has_svgA": (pair_dir / "svgA.svg").exists(),
-                "has_svgB": (pair_dir / "svgB.svg").exists(),
-                "has_annotations": (pair_dir / "annotations.json").exists(),
+                "has_svgA": has_svgA,
+                "has_svgB": has_svgB,
+                "has_annotations": has_annotations,
             }
         )
     return {"user_id": user_id, "pairs": pairs}
@@ -206,13 +244,17 @@ async def get_svg(user_id: str, pair_id: str, side: str):
     """
     Serve the SVG file for a given side ('A' or 'B').
     Returns the raw SVG with the correct content-type.
+    SVGs are stored per-image under bbs/<image_id>/<lang>.svg.
     """
     _sanitise_id(user_id)
     _sanitise_id(pair_id)
     if side not in ("A", "B"):
         raise HTTPException(status_code=400, detail="Side must be 'A' or 'B'.")
     _validate_pair(user_id, pair_id)
-    svg_file = _svg_path(user_id, pair_id, side)
+    meta = _load_pair_meta(pair_id)
+    image_id = meta["image_id"]
+    lang = meta["src_lang"] if side == "A" else meta["tgt_lang"]
+    svg_file = _safe_path(BBS_DIR, image_id, f"{lang}.svg")
     if not svg_file.exists():
         raise HTTPException(status_code=404, detail=f"SVG{side} not found for pair '{pair_id}'.")
     return Response(content=svg_file.read_bytes(), media_type="image/svg+xml")
@@ -223,32 +265,134 @@ async def get_svg(user_id: str, pair_id: str, side: str):
 
 @app.get("/api/users/{user_id}/pairs/{pair_id}/annotations")
 async def get_annotations(user_id: str, pair_id: str):
-    """Return the JSON annotations for a user/pair."""
+    """
+    Return the JSON annotations for a user/pair.
+
+    Bounding boxes are read from the shared bbs/<image_id>/<lang>.json files so that
+    any corrections made while annotating one pair are visible in all pairs that
+    reference the same image.  Alignments are read from pairs/<pair_id>/alignments.json.
+    """
     _sanitise_id(user_id)
     _sanitise_id(pair_id)
     _validate_pair(user_id, pair_id)
-    ann_file = _annotation_path(user_id, pair_id)
-    if not ann_file.exists():
-        # Return an empty skeleton if the file doesn't exist yet.
-        return {"svgA": {"boxes": []}, "svgB": {"boxes": []}, "alignments": [], "images_identical": None}
-    with ann_file.open("r", encoding="utf-8") as fh:
-        return json.load(fh)
+    pair_file = _safe_path(PAIRS_DIR, pair_id, "alignments.json")
+    if not pair_file.exists():
+        # Return an empty skeleton if the pair hasn't been set up yet.
+        return {
+            "svgA": {"boxes": []},
+            "svgB": {"boxes": []},
+            "alignments": [],
+            "images_identical": None,
+        }
+    with pair_file.open("r", encoding="utf-8") as fh:
+        aln_data = json.load(fh)
+    image_id = aln_data["image_id"]
+    src_lang = aln_data["src_lang"]
+    tgt_lang = aln_data["tgt_lang"]
+    src_bb_file = _safe_path(BBS_DIR, image_id, f"{src_lang}.json")
+    tgt_bb_file = _safe_path(BBS_DIR, image_id, f"{tgt_lang}.json")
+    if not src_bb_file.exists() or not tgt_bb_file.exists():
+        return {
+            "svgA": {"boxes": []},
+            "svgB": {"boxes": []},
+            "alignments": [],
+            "images_identical": aln_data.get("images_identical"),
+        }
+    with src_bb_file.open("r", encoding="utf-8") as fh:
+        src_bb_data = json.load(fh)
+    with tgt_bb_file.open("r", encoding="utf-8") as fh:
+        tgt_bb_data = json.load(fh)
+    # Convert from BB-file format (w/h, numeric IDs) to webapp format (width/height, A/B-prefixed IDs)
+    boxes_a = [
+        {
+            "id": f"A{b['id']}",
+            "x": b["x"],
+            "y": b["y"],
+            "width": b["w"],
+            "height": b["h"],
+            "text": b["text"],
+        }
+        for b in src_bb_data["boxes"]
+    ]
+    boxes_b = [
+        {
+            "id": f"B{b['id']}",
+            "x": b["x"],
+            "y": b["y"],
+            "width": b["w"],
+            "height": b["h"],
+            "text": b["text"],
+        }
+        for b in tgt_bb_data["boxes"]
+    ]
+    alignments = [
+        {"boxA": f"A{a['src_box']}", "boxB": f"B{a['tgt_box']}"}
+        for a in aln_data.get("alignments", [])
+    ]
+    return {
+        "svgA": {"boxes": boxes_a},
+        "svgB": {"boxes": boxes_b},
+        "alignments": alignments,
+        "images_identical": aln_data.get("images_identical"),
+    }
 
 
 @app.put("/api/users/{user_id}/pairs/{pair_id}/annotations")
 async def save_annotations(user_id: str, pair_id: str, payload: Annotations):
     """
-    Persist updated annotations back to the JSON file.
-    The entire annotations object is replaced (full PUT semantics).
+    Persist updated annotations.
+
+    Bounding boxes are written to the shared bbs/<image_id>/<lang>.json files so
+    that BB corrections are propagated automatically to every other pair that
+    references the same image.  Alignments are written to
+    pairs/<pair_id>/alignments.json (pair-specific).
     """
     _sanitise_id(user_id)
     _sanitise_id(pair_id)
     _validate_pair(user_id, pair_id)
-    ann_file = _annotation_path(user_id, pair_id)
-    ann_file.parent.mkdir(parents=True, exist_ok=True)
+    meta = _load_pair_meta(pair_id)
+    image_id = meta["image_id"]
+    src_lang = meta["src_lang"]
+    tgt_lang = meta["tgt_lang"]
     data = payload.model_dump()
-    with ann_file.open("w", encoding="utf-8") as fh:
-        json.dump(data, fh, ensure_ascii=False, indent=2)
+    # --- Save BB files (shared per image) ------------------------------------
+    for side_key, lang in (("svgA", src_lang), ("svgB", tgt_lang)):
+        bb_file = _safe_path(BBS_DIR, image_id, f"{lang}.json")
+        # Preserve top-level metadata (image_id, language, png) if the file exists.
+        if bb_file.exists():
+            with bb_file.open("r", encoding="utf-8") as fh:
+                existing = json.load(fh)
+        else:
+            existing = {"image_id": image_id, "language": lang, "png": {}}
+        existing["boxes"] = [
+            {
+                "id": _strip_side_prefix(b["id"]),
+                "x": b["x"],
+                "y": b["y"],
+                "w": b["width"],
+                "h": b["height"],
+                "text": b["text"],
+            }
+            for b in data[side_key]["boxes"]
+        ]
+        bb_file.parent.mkdir(parents=True, exist_ok=True)
+        with bb_file.open("w", encoding="utf-8") as fh:
+            json.dump(existing, fh, ensure_ascii=False, indent=2)
+    # --- Save alignment file (pair-specific) ---------------------------------
+    aln_file = _safe_path(PAIRS_DIR, pair_id, "alignments.json")
+    # Keep all existing metadata fields; replace alignments only.
+    aln_data = dict(meta)
+    aln_data["alignments"] = [
+        {
+            "src_box": _strip_side_prefix(a["boxA"]),
+            "tgt_box": _strip_side_prefix(a["boxB"]),
+        }
+        for a in data["alignments"]
+    ]
+    aln_data["images_identical"] = data["images_identical"]
+    aln_file.parent.mkdir(parents=True, exist_ok=True)
+    with aln_file.open("w", encoding="utf-8") as fh:
+        json.dump(aln_data, fh, ensure_ascii=False, indent=2)
     return {"status": "saved"}
 
 
