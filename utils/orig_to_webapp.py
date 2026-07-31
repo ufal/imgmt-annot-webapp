@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 """
-orig_to_webapp.py — Convert one original-format record to the batch format.
+orig_to_webapp.py — Convert one original-format record to the native webapp format.
 
-The batch format separates bounding-box data (shared per image/language) from
-pair-specific alignment data:
+The webapp reads bounding boxes and SVGs from a shared per-image store
+(bbs/<image_id>/<lang>.*) and alignments from a per-pair file
+(pairs/<pair_id>/alignments.json).  This script populates those files from an
+original-format JSON record.
 
-  <batch_dir>/
+  <output_dir>/
       bbs/<image_id>/<lang>.json   — boxes + image metadata (created once per lang)
       bbs/<image_id>/<lang>.svg    — SVG (copied once per lang)
       pairs/<pair_id>/
           alignments.json          — 1:1 alignment indices + pair metadata
 
 The same image may appear in several language pairs; storing BBs once avoids
-duplication and ensures a single source of truth for BB annotation.
-
-A helper function assemble_webapp_pair() assembles a webapp-ready pair directory
-(annotations.json + SVGs) from the split files, for use by prepare_batch.py or
-for ad-hoc single-pair set-up.
+duplication and ensures a single source of truth for BB annotation.  The bbs/
+files are skipped (not overwritten) if they already exist.
 
 Original format (one JSON file per language-pair per image):
   <data_root>/<image_id>/<src>-<tgt>.json   — texts + bounding boxes
@@ -24,13 +23,10 @@ Original format (one JSON file per language-pair per image):
   <data_root>/<image_id>/svg/<tgt>.svg       — target SVG
 
 Usage:
-    python orig_to_webapp.py <orig_json> <batch_dir> [--pair-id ID]
-                             [--assemble-to WEBAPP_PAIR_DIR]
+    python orig_to_webapp.py <orig_json> <output_dir> [--pair-id ID]
 
 Example:
-    python orig_to_webapp.py ../orig_data/train/543/es-it.json ./batch --pair-id pair_001
-    python orig_to_webapp.py ../orig_data/train/543/es-it.json ./batch \\
-        --pair-id pair_001 --assemble-to ./data/datasets/user1/pair_001
+    python orig_to_webapp.py ../orig_data/train/543/es-it.json ./data --pair-id pair_001
 """
 
 import argparse
@@ -79,19 +75,19 @@ def _write_bb_file(
 
 def convert(
     orig_json: Path,
-    batch_dir: Path,
+    output_dir: Path,
     pair_id: str,
     data_dir: Path | None = None,
 ) -> dict:
     """
-    Convert one original-format JSON file to the split batch format.
+    Convert one original-format JSON file to the native webapp layout.
 
     Writes:
-      <batch_dir>/bbs/<image_id>/<src_lang>.json   (skipped if exists)
-      <batch_dir>/bbs/<image_id>/<src_lang>.svg    (skipped if exists)
-      <batch_dir>/bbs/<image_id>/<tgt_lang>.json   (skipped if exists)
-      <batch_dir>/bbs/<image_id>/<tgt_lang>.svg    (skipped if exists)
-      <batch_dir>/pairs/<pair_id>/alignments.json
+      <output_dir>/bbs/<image_id>/<src_lang>.json   (skipped if exists)
+      <output_dir>/bbs/<image_id>/<src_lang>.svg    (skipped if exists)
+      <output_dir>/bbs/<image_id>/<tgt_lang>.json   (skipped if exists)
+      <output_dir>/bbs/<image_id>/<tgt_lang>.svg    (skipped if exists)
+      <output_dir>/pairs/<pair_id>/alignments.json
 
     Returns a dict suitable for an entry in mapping.json:
       {image_id, src_lang, tgt_lang, orig_json (relative to data_dir if given)}
@@ -103,7 +99,7 @@ def convert(
     src_lang = data["source_language"]
     tgt_lang = data["target_language"]
 
-    bbs_dir = batch_dir / "bbs" / image_id
+    bbs_dir = output_dir / "bbs" / image_id
     bbs_dir.mkdir(parents=True, exist_ok=True)
 
     # Write BB files (one per language; idempotent — skips if already written)
@@ -145,7 +141,7 @@ def convert(
             file=sys.stderr,
         )
 
-    pair_dir = batch_dir / "pairs" / pair_id
+    pair_dir = output_dir / "pairs" / pair_id
     pair_dir.mkdir(parents=True, exist_ok=True)
     alignment_data = {
         "image_id": image_id,
@@ -168,112 +164,23 @@ def convert(
     }
 
 
-def assemble_webapp_pair(
-    batch_dir: Path,
-    pair_id: str,
-    webapp_pair_dir: Path,
-) -> None:
-    """
-    Assemble a webapp-ready pair directory from the split batch files.
-
-    Reads:
-      <batch_dir>/pairs/<pair_id>/alignments.json
-      <batch_dir>/bbs/<image_id>/<src_lang>.json
-      <batch_dir>/bbs/<image_id>/<tgt_lang>.json
-      <batch_dir>/bbs/<image_id>/<src_lang>.svg
-      <batch_dir>/bbs/<image_id>/<tgt_lang>.svg
-
-    Writes:
-      <webapp_pair_dir>/annotations.json  (webapp format)
-      <webapp_pair_dir>/svgA.svg
-      <webapp_pair_dir>/svgB.svg
-    """
-    aln_file = batch_dir / "pairs" / pair_id / "alignments.json"
-    with aln_file.open("r", encoding="utf-8") as fh:
-        aln_data = json.load(fh)
-
-    image_id = aln_data["image_id"]
-    src_lang = aln_data["src_lang"]
-    tgt_lang = aln_data["tgt_lang"]
-
-    bbs_dir = batch_dir / "bbs" / image_id
-
-    with (bbs_dir / f"{src_lang}.json").open("r", encoding="utf-8") as fh:
-        src_bb_data = json.load(fh)
-    with (bbs_dir / f"{tgt_lang}.json").open("r", encoding="utf-8") as fh:
-        tgt_bb_data = json.load(fh)
-
-    boxes_a = [
-        {
-            "id": f"A{b['id']}",
-            "x": b["x"],
-            "y": b["y"],
-            "width": b["w"],
-            "height": b["h"],
-            "text": b["text"],
-        }
-        for b in src_bb_data["boxes"]
-    ]
-    boxes_b = [
-        {
-            "id": f"B{b['id']}",
-            "x": b["x"],
-            "y": b["y"],
-            "width": b["w"],
-            "height": b["h"],
-            "text": b["text"],
-        }
-        for b in tgt_bb_data["boxes"]
-    ]
-    alignments = [
-        {"boxA": f"A{a['src_box']}", "boxB": f"B{a['tgt_box']}"}
-        for a in aln_data["alignments"]
-    ]
-
-    annotations = {
-        "svgA": {"boxes": boxes_a},
-        "svgB": {"boxes": boxes_b},
-        "alignments": alignments,
-    }
-
-    webapp_pair_dir.mkdir(parents=True, exist_ok=True)
-    with (webapp_pair_dir / "annotations.json").open("w", encoding="utf-8") as fh:
-        json.dump(annotations, fh, ensure_ascii=False, indent=2)
-
-    for lang, dest_name in ((src_lang, "svgA.svg"), (tgt_lang, "svgB.svg")):
-        src_svg = bbs_dir / f"{lang}.svg"
-        if src_svg.exists():
-            shutil.copy2(src_svg, webapp_pair_dir / dest_name)
-        else:
-            print(f"Warning: SVG not found: {src_svg}", file=sys.stderr)
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Convert an original-format JSON record to the split batch format "
+            "Convert an original-format JSON record to the native webapp layout "
             "(bbs/<image_id>/<lang>.json + pairs/<pair_id>/alignments.json)."
         )
     )
     parser.add_argument("orig_json", type=Path, help="Path to the original JSON file.")
     parser.add_argument(
-        "batch_dir",
+        "output_dir",
         type=Path,
-        help="Root of the batch directory to write into.",
+        help="Root output directory (webapp data/ dir or batch root).",
     )
     parser.add_argument(
         "--pair-id",
         default="pair_001",
         help="Pair identifier to use (default: pair_001).",
-    )
-    parser.add_argument(
-        "--assemble-to",
-        type=Path,
-        metavar="WEBAPP_PAIR_DIR",
-        help=(
-            "If given, also assemble a webapp-ready pair directory "
-            "(annotations.json + SVGs) at this path."
-        ),
     )
     args = parser.parse_args()
 
@@ -281,17 +188,14 @@ def main() -> None:
         print(f"Error: file not found: {args.orig_json}", file=sys.stderr)
         sys.exit(1)
 
-    meta = convert(args.orig_json, args.batch_dir, args.pair_id)
+    meta = convert(args.orig_json, args.output_dir, args.pair_id)
     print(
-        f"Split format written to {args.batch_dir} "
+        f"Written to {args.output_dir} "
         f"(image {meta['image_id']!r}, {meta['src_lang']}-{meta['tgt_lang']}, "
         f"pair {args.pair_id!r})"
     )
 
-    if args.assemble_to:
-        assemble_webapp_pair(args.batch_dir, args.pair_id, args.assemble_to)
-        print(f"Webapp pair assembled at {args.assemble_to}")
-
 
 if __name__ == "__main__":
     main()
+

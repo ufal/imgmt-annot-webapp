@@ -8,13 +8,12 @@ The script:
      annotators' batches.
   3. Randomly assigns images to annotators (greedy, no image overlap) until each
      annotator has up to <n_pairs_per_annotator> pairs.
-  4. Converts each assigned pair to the split batch format (bbs/, pairs/).
-  5. Assembles a webapp-ready directory for each annotator under datasets/.
-  6. Writes users.json (webapp user config) and mapping.json (pair → original
-     file mapping) at the batch root.
+  4. Converts each assigned pair to the native webapp layout (bbs/, pairs/).
+  5. Writes users.json (webapp user config) and mapping.json (pair → original
+     file mapping) at the output root.
 
-Batch directory layout
-----------------------
+The output directory can be used directly as the webapp's data/ directory:
+
   <output_dir>/
       bbs/
           <image_id>/<lang>.json   — boxes + image metadata (shared across pairs)
@@ -22,14 +21,12 @@ Batch directory layout
       pairs/
           <pair_id>/
               alignments.json      — alignment indices + pair metadata
-      datasets/
-          <annotator>/
-              <pair_id>/
-                  annotations.json — assembled webapp format (edit me!)
-                  svgA.svg
-                  svgB.svg
       users.json                   — webapp user/dataset config
       mapping.json                 — pair_id → {image_id, langs, annotator, orig_json}
+
+Because bbs/ files are shared, any BB correction made through the webapp is
+visible in every pair that references the same image, regardless of which
+annotator is viewing it.
 
 Usage:
     python prepare_batch.py <data_dir> <n_pairs_per_annotator> <output_dir>
@@ -39,14 +36,14 @@ Usage:
 Arguments:
     data_dir               Root of original data (e.g. orig_data/train).
     n_pairs_per_annotator  Maximum pairs per annotator.
-    output_dir             Destination batch directory.
+    output_dir             Destination directory (becomes the webapp's data/).
 
 Options:
     --annotators  Space-separated list of annotator IDs (default: annotator1).
     --seed        Random seed for reproducible sampling.
 
 Example:
-    python prepare_batch.py ../orig_data/train 10 ./batches/batch_01 \\
+    python prepare_batch.py ../orig_data/train 10 ./data \\
         --annotators alice bob carol --seed 42
 """
 
@@ -59,7 +56,7 @@ from pathlib import Path
 
 _UTILS_DIR = Path(__file__).parent
 sys.path.insert(0, str(_UTILS_DIR))
-from orig_to_webapp import assemble_webapp_pair, convert  # noqa: E402
+from orig_to_webapp import convert  # noqa: E402
 
 
 def find_orig_jsons(data_dir: Path) -> list[Path]:
@@ -148,11 +145,6 @@ def prepare_batch(
                 f"  [{ann}] {json_file.relative_to(data_dir)}  →  {pair_id}"
             )
             meta = convert(json_file, output_dir, pair_id, data_dir=data_dir)
-            assemble_webapp_pair(
-                output_dir,
-                pair_id,
-                output_dir / "datasets" / ann / pair_id,
-            )
             meta["annotator"] = ann
             mapping[pair_id] = meta
             pair_ids_for_ann.append(pair_id)
@@ -186,7 +178,7 @@ def main() -> None:
         type=int,
         help="Maximum number of image pairs per annotator.",
     )
-    parser.add_argument("output_dir", type=Path, help="Destination batch directory.")
+    parser.add_argument("output_dir", type=Path, help="Destination directory (becomes the webapp's data/).")
     parser.add_argument(
         "--annotators",
         nargs="+",
