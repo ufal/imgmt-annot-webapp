@@ -1,0 +1,12 @@
+{
+  "image_id": "img_003",
+  "language": "en",
+  "png": {},
+  "boxes": [
+    {"id": "1", "x": 18, "y": 24, "w": 175, "h": 20, "text": "Technical Manual v3"},
+    {"id": "2", "x": 18, "y": 64, "w": 140, "h": 18, "text": "Safety Guidelines"},
+    {"id": "3", "x": 18, "y": 96, "w": 210, "h": 34, "text": "Always disconnect power before performing maintenance."},
+    {"id": "4", "x": 18, "y": 144, "w": 100, "h": 18, "text": "Installation"},
+    {"id": "5", "x": 18, "y": 175, "w": 210, "h": 34, "text": "Mount the device on a flat and stable surface."}
+  ]
+}

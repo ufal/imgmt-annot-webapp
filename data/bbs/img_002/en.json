@@ -1,0 +1,14 @@
+{
+  "image_id": "img_002",
+  "language": "en",
+  "png": {},
+  "boxes": [
+    {"id": "1", "x": 18, "y": 24, "w": 150, "h": 20, "text": "Product Catalogue"},
+    {"id": "2", "x": 18, "y": 64, "w": 100, "h": 18, "text": "Electronics"},
+    {"id": "3", "x": 18, "y": 96, "w": 180, "h": 18, "text": "Laptop Pro X1 — $999"},
+    {"id": "4", "x": 18, "y": 116, "w": 200, "h": 18, "text": "Wireless Headphones — $149"},
+    {"id": "5", "x": 18, "y": 149, "w": 100, "h": 18, "text": "Accessories"},
+    {"id": "6", "x": 18, "y": 179, "w": 130, "h": 18, "text": "USB-C Hub — $49"},
+    {"id": "7", "x": 18, "y": 199, "w": 140, "h": 18, "text": "Laptop Stand — $39"}
+  ]
+}
