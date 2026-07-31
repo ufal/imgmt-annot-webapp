@@ -1,96 +1,228 @@
 #!/usr/bin/env python3
 """
-prepare_batch.py — Sample N image pairs from an original-data directory and
-produce a ready-to-use webapp batch directory.
+prepare_batch.py — Distribute image pairs across annotators and prepare the batch.
 
-The script recursively searches <data_dir> for original-format JSON files
-(files whose name matches the pattern <src>-<tgt>.json inside a directory
-that also contains an svg/ sub-directory), randomly selects up to <n_pairs>
-of them, converts each one with orig_to_webapp, and writes the result under
-<output_dir>/pair_NNN/.
+The script:
+  1. Discovers all original-format JSON files under <data_dir>.
+  2. Groups language pairs by image ID to avoid repeating the same image across
+     annotators' batches.
+  3. Randomly assigns images to annotators (greedy, no image overlap) until each
+     annotator has up to <n_pairs_per_annotator> pairs.
+  4. Converts each assigned pair to the split batch format (bbs/, pairs/).
+  5. Assembles a webapp-ready directory for each annotator under datasets/.
+  6. Writes users.json (webapp user config) and mapping.json (pair → original
+     file mapping) at the batch root.
+
+Batch directory layout
+----------------------
+  <output_dir>/
+      bbs/
+          <image_id>/<lang>.json   — boxes + image metadata (shared across pairs)
+          <image_id>/<lang>.svg    — SVG (shared)
+      pairs/
+          <pair_id>/
+              alignments.json      — alignment indices + pair metadata
+      datasets/
+          <annotator>/
+              <pair_id>/
+                  annotations.json — assembled webapp format (edit me!)
+                  svgA.svg
+                  svgB.svg
+      users.json                   — webapp user/dataset config
+      mapping.json                 — pair_id → {image_id, langs, annotator, orig_json}
 
 Usage:
-    python prepare_batch.py <data_dir> <n_pairs> <output_dir> [--seed SEED]
+    python prepare_batch.py <data_dir> <n_pairs_per_annotator> <output_dir>
+                            [--annotators ann1 ann2 ...]
+                            [--seed SEED]
 
 Arguments:
-    data_dir    Root directory that contains the original image records
-                (e.g. orig_data/train).
-    n_pairs     Number of image pairs to include in the batch.
-    output_dir  Destination directory for the webapp batch.
+    data_dir               Root of original data (e.g. orig_data/train).
+    n_pairs_per_annotator  Maximum pairs per annotator.
+    output_dir             Destination batch directory.
 
 Options:
-    --seed SEED  Random seed for reproducible sampling (default: none).
+    --annotators  Space-separated list of annotator IDs (default: annotator1).
+    --seed        Random seed for reproducible sampling.
 
 Example:
-    python prepare_batch.py ../orig_data/train 5 ./batches/batch_01 --seed 42
+    python prepare_batch.py ../orig_data/train 10 ./batches/batch_01 \\
+        --annotators alice bob carol --seed 42
 """
 
 import argparse
+import json
 import random
 import sys
+from collections import defaultdict
 from pathlib import Path
 
-# Allow importing sibling script without installing a package
 _UTILS_DIR = Path(__file__).parent
 sys.path.insert(0, str(_UTILS_DIR))
-from orig_to_webapp import convert  # noqa: E402
+from orig_to_webapp import assemble_webapp_pair, convert  # noqa: E402
 
 
 def find_orig_jsons(data_dir: Path) -> list[Path]:
     """Return all original-format JSON files found under data_dir."""
-    results = []
-    for json_file in sorted(data_dir.rglob("*.json")):
-        # Each record lives in a directory that also has an svg/ sub-directory
-        if (json_file.parent / "svg").is_dir():
-            results.append(json_file)
-    return results
+    return sorted(
+        p for p in data_dir.rglob("*.json") if (p.parent / "svg").is_dir()
+    )
+
+
+def _assign_pairs(
+    all_jsons: list[Path],
+    annotators: list[str],
+    n_per_annotator: int,
+) -> dict[str, list[Path]]:
+    """
+    Assign language-pair JSON files to annotators ensuring no image is shared
+    across annotators.  Uses a greedy strategy: images are shuffled then
+    distributed to the annotator with the fewest pairs so far, one image at a time.
+
+    Returns {annotator: [list of assigned json_files]}.
+    """
+    # Group language pairs by image_id (parent directory name)
+    image_groups: dict[str, list[Path]] = defaultdict(list)
+    for jf in all_jsons:
+        image_groups[jf.parent.name].append(jf)
+
+    image_ids = list(image_groups.keys())
+    random.shuffle(image_ids)
+
+    assignment: dict[str, list[Path]] = {ann: [] for ann in annotators}
+
+    for image_id in image_ids:
+        # Find the annotator with the fewest pairs who still needs more
+        eligible = [a for a in annotators if len(assignment[a]) < n_per_annotator]
+        if not eligible:
+            break  # All annotators are full
+        ann = min(eligible, key=lambda a: len(assignment[a]))
+        remaining = n_per_annotator - len(assignment[ann])
+        assignment[ann].extend(image_groups[image_id][:remaining])
+
+    return assignment
+
+
+def prepare_batch(
+    data_dir: Path,
+    n_per_annotator: int,
+    output_dir: Path,
+    annotators: list[str],
+    seed: int | None = None,
+) -> None:
+    all_jsons = find_orig_jsons(data_dir)
+    if not all_jsons:
+        print(f"Error: no original-format JSON files found under {data_dir}", file=sys.stderr)
+        sys.exit(1)
+
+    if seed is not None:
+        random.seed(seed)
+
+    assignment = _assign_pairs(all_jsons, annotators, n_per_annotator)
+
+    total_pairs = sum(len(v) for v in assignment.values())
+    total_available = len(all_jsons)
+    if total_pairs < len(annotators) * n_per_annotator:
+        print(
+            f"Warning: only {total_available} record(s) available across "
+            f"{len(set(jf.parent.name for jf in all_jsons))} image(s); "
+            f"some annotators may receive fewer than {n_per_annotator} pair(s).",
+            file=sys.stderr,
+        )
+
+    mapping: dict[str, dict] = {}
+    users: dict[str, dict] = {}
+
+    # Global pair counter so pair IDs are unique across annotators
+    pair_counter = 1
+
+    for ann in annotators:
+        pairs_for_ann = assignment[ann]
+        pair_ids_for_ann: list[str] = []
+
+        for json_file in pairs_for_ann:
+            pair_id = f"pair_{pair_counter:03d}"
+            pair_counter += 1
+
+            print(
+                f"  [{ann}] {json_file.relative_to(data_dir)}  →  {pair_id}"
+            )
+            meta = convert(json_file, output_dir, pair_id, data_dir=data_dir)
+            assemble_webapp_pair(
+                output_dir,
+                pair_id,
+                output_dir / "datasets" / ann / pair_id,
+            )
+            meta["annotator"] = ann
+            mapping[pair_id] = meta
+            pair_ids_for_ann.append(pair_id)
+
+        users[ann] = {"display_name": ann, "datasets": pair_ids_for_ann}
+
+    # Write users.json
+    users_file = output_dir / "users.json"
+    with users_file.open("w", encoding="utf-8") as fh:
+        json.dump(users, fh, ensure_ascii=False, indent=2)
+
+    # Write mapping.json
+    mapping_file = output_dir / "mapping.json"
+    with mapping_file.open("w", encoding="utf-8") as fh:
+        json.dump(mapping, fh, ensure_ascii=False, indent=2)
+
+    print(f"\nDone.  Batch written to: {output_dir}")
+    print(f"  users.json:   {users_file}")
+    print(f"  mapping.json: {mapping_file}")
+    for ann, pair_ids in [(a, [k for k, v in mapping.items() if v["annotator"] == a]) for a in annotators]:
+        print(f"  {ann}: {len(pair_ids)} pair(s) — {', '.join(pair_ids) or '(none)'}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Prepare a webapp annotation batch from original-format data."
+        description="Distribute image pairs across annotators and prepare a webapp batch."
     )
     parser.add_argument("data_dir", type=Path, help="Root directory of original data.")
-    parser.add_argument("n_pairs", type=int, help="Number of image pairs to include.")
-    parser.add_argument("output_dir", type=Path, help="Destination webapp batch directory.")
-    parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducible sampling.")
+    parser.add_argument(
+        "n_pairs_per_annotator",
+        type=int,
+        help="Maximum number of image pairs per annotator.",
+    )
+    parser.add_argument("output_dir", type=Path, help="Destination batch directory.")
+    parser.add_argument(
+        "--annotators",
+        nargs="+",
+        default=["annotator1"],
+        metavar="ID",
+        help="Annotator IDs (default: annotator1).",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for reproducible sampling.",
+    )
     args = parser.parse_args()
 
     if not args.data_dir.exists():
         print(f"Error: data directory not found: {args.data_dir}", file=sys.stderr)
         sys.exit(1)
-
-    if args.n_pairs < 1:
-        print("Error: n_pairs must be a positive integer.", file=sys.stderr)
+    if args.n_pairs_per_annotator < 1:
+        print("Error: n_pairs_per_annotator must be a positive integer.", file=sys.stderr)
+        sys.exit(1)
+    if len(args.annotators) != len(set(args.annotators)):
+        print("Error: duplicate annotator IDs.", file=sys.stderr)
         sys.exit(1)
 
-    all_jsons = find_orig_jsons(args.data_dir)
-    if not all_jsons:
-        print(f"Error: no original-format JSON files found under {args.data_dir}", file=sys.stderr)
-        sys.exit(1)
-
-    if args.seed is not None:
-        random.seed(args.seed)
-
-    n = min(args.n_pairs, len(all_jsons))
-    if n < args.n_pairs:
-        print(
-            f"Warning: only {len(all_jsons)} record(s) available; "
-            f"producing {n} pair(s) instead of {args.n_pairs}.",
-            file=sys.stderr,
-        )
-
-    selected = random.sample(all_jsons, n)
-
-    print(f"Converting {n} pair(s) into {args.output_dir} …")
-    for idx, json_file in enumerate(selected, start=1):
-        pair_id = f"pair_{idx:03d}"
-        out = args.output_dir / pair_id
-        print(f"  [{idx}/{n}] {json_file.relative_to(args.data_dir)}  →  {pair_id}")
-        convert(json_file, out)
-
-    print(f"\nDone. Batch written to: {args.output_dir}")
-    print(f"Pair IDs: {', '.join(f'pair_{i:03d}' for i in range(1, n + 1))}")
+    print(
+        f"Preparing batch for {len(args.annotators)} annotator(s), "
+        f"up to {args.n_pairs_per_annotator} pair(s) each …"
+    )
+    prepare_batch(
+        args.data_dir,
+        args.n_pairs_per_annotator,
+        args.output_dir,
+        args.annotators,
+        args.seed,
+    )
 
 
 if __name__ == "__main__":
