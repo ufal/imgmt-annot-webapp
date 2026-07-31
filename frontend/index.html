@@ -262,6 +262,7 @@ const state = {
   displayName: null,
   currentPair: null,
   annotations: null,      // { svgA: { boxes: [] }, svgB: { boxes: [] }, alignments: [] }
+  translations: { A: {}, B: {} }, // id → { translation, source_language }
   mode: 'bb',             // 'bb' | 'align'
   drawing: null,          // { side: 'A'|'B' } while in draw-new-box mode
   editTarget: null,       // { side, box } during edit modal
@@ -394,10 +395,33 @@ async function loadPair(pairId) {
     loadSVGIntoCanvas('A', `/api/users/${state.userId}/pairs/${pairId}/svg/A`),
     loadSVGIntoCanvas('B', `/api/users/${state.userId}/pairs/${pairId}/svg/B`),
   ]);
+  await refreshTranslations();
   renderBoxes('A');
   renderBoxes('B');
   renderSidePanels();
   $('#save-status').textContent = '';
+}
+
+async function refreshTranslations() {
+  state.translations = { A: {}, B: {} };
+  const requests = ['A', 'B'].map(async (side) => {
+    const boxes = state.annotations?.[`svg${side}`]?.boxes ?? [];
+    const nonEmpty = boxes.filter((box) => box.text?.trim());
+    if (!nonEmpty.length) return;
+    try {
+      const data = await apiFetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: nonEmpty.map((box) => box.text) }),
+      });
+      data.translations.forEach((translation, index) => {
+        state.translations[side][nonEmpty[index].id] = translation;
+      });
+    } catch (e) {
+      // Tooltips are optional; annotation editing remains available offline.
+    }
+  });
+  await Promise.all(requests);
 }
 
 // =========================================================================
@@ -676,6 +700,10 @@ function renderBBPanel(side) {
     span.className = 'truncate flex-1';
     span.textContent = box.text || `[${box.id}]`;
     span.title = box.text;
+    const translation = state.translations[side]?.[box.id];
+    if (translation?.translation && !translation.source_language?.toLowerCase().startsWith('en')) {
+      span.title = `English: ${translation.translation}`;
+    }
 
     const editBtn = document.createElement('button');
     editBtn.textContent = '✎';
@@ -988,6 +1016,7 @@ $('#edit-save').addEventListener('click', () => {
   box.height = parseFloat($('#edit-h').value) || 0;
 
   $('#edit-modal').classList.add('hidden');
+  refreshTranslations().then(() => renderSidePanels());
   renderBoxes(side);
   renderSidePanels();
   scheduleSave();
