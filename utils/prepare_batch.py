@@ -4,10 +4,9 @@ prepare_batch.py — Distribute image pairs across annotators and prepare the ba
 
 The script:
   1. Discovers all original-format JSON files under <data_dir>.
-  2. Groups language pairs by image ID to avoid repeating the same image across
-     annotators' batches.
-  3. Randomly assigns images to annotators (greedy, no image overlap) until each
-     annotator has up to <n_pairs_per_annotator> pairs.
+  2. Randomly samples language-pair JSONs across all image groups.
+  3. Assigns each image group to at most one annotator, until each annotator has
+     up to <n_pairs_per_annotator> pairs.
   4. Converts each assigned pair to the native webapp layout (bbs/, pairs/).
   5. Writes users.json (webapp user config) and mapping.json (pair → original
      file mapping) at the output root.
@@ -51,7 +50,6 @@ import argparse
 import json
 import random
 import sys
-from collections import defaultdict
 from pathlib import Path
 
 _UTILS_DIR = Path(__file__).parent
@@ -73,29 +71,32 @@ def _assign_pairs(
 ) -> dict[str, list[Path]]:
     """
     Assign language-pair JSON files to annotators ensuring no image is shared
-    across annotators.  Uses a greedy strategy: images are shuffled then
-    distributed to the annotator with the fewest pairs so far, one image at a time.
+    across annotators.  JSON files are shuffled before assignment so records
+    from all image groups can be sampled, while each image group is owned by
+    only one annotator.
 
     Returns {annotator: [list of assigned json_files]}.
     """
-    # Group language pairs by image_id (parent directory name)
-    image_groups: dict[str, list[Path]] = defaultdict(list)
-    for jf in all_jsons:
-        image_groups[jf.parent.name].append(jf)
-
-    image_ids = list(image_groups.keys())
-    random.shuffle(image_ids)
-
     assignment: dict[str, list[Path]] = {ann: [] for ann in annotators}
+    image_owners: dict[str, str] = {}
+    shuffled_jsons = list(all_jsons)
+    random.shuffle(shuffled_jsons)
 
-    for image_id in image_ids:
-        # Find the annotator with the fewest pairs who still needs more
+    for json_file in shuffled_jsons:
+        image_id = json_file.parent.name
+        owner = image_owners.get(image_id)
+        if owner is not None:
+            if len(assignment[owner]) < n_per_annotator:
+                assignment[owner].append(json_file)
+            continue
+
+        # Find the annotator with the fewest sampled records who still needs more.
         eligible = [a for a in annotators if len(assignment[a]) < n_per_annotator]
         if not eligible:
-            break  # All annotators are full
-        ann = min(eligible, key=lambda a: len(assignment[a]))
-        remaining = n_per_annotator - len(assignment[ann])
-        assignment[ann].extend(image_groups[image_id][:remaining])
+            break
+        owner = min(eligible, key=lambda a: len(assignment[a]))
+        image_owners[image_id] = owner
+        assignment[owner].append(json_file)
 
     return assignment
 
