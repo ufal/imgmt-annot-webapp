@@ -565,14 +565,21 @@ function loadSVGIntoCanvas(side, url, imageSize) {
             svgH = svgH || parseFloat(parts[3]) || svgH;
           }
         }
+        const sourceW = svgW || 400;
+        const sourceH = svgH || 300;
         // Bounding boxes are defined in the original PNG coordinate space.
         // Prefer those dimensions over SVG metadata, which may use a
         // different scale or omit the image's original size entirely.
-        svgW = imageSize?.width || svgW || 400;
-        svgH = imageSize?.height || svgH || 300;
+        svgW = imageSize?.width || sourceW;
+        svgH = imageSize?.height || sourceH;
 
         // Ensure the SVG root has explicit width/height so that browsers
         // can report correct naturalWidth/naturalHeight on the img element.
+        // SVGs without a viewBox otherwise keep their original user-unit
+        // coordinates when the viewport is resized to the PNG dimensions.
+        if (!viewBox) {
+          svgEl.setAttribute('viewBox', `0 0 ${sourceW} ${sourceH}`);
+        }
         svgEl.setAttribute('width',  svgW);
         svgEl.setAttribute('height', svgH);
         const serialisedSvg = new XMLSerializer().serializeToString(doc);
