@@ -513,6 +513,9 @@ function initCanvases() {
       if (opt.e.altKey || opt.e.button !== 0) return;
       // Suppress popup when the mouse moved more than 5px (drag, not click)
       if (Math.hypot(opt.e.clientX - down.x, opt.e.clientY - down.y) > 5) return;
+      if (opt.target?.data?.side === side && opt.target.data.id) {
+        activateBoxForMode(side, opt.target.data.id);
+      }
       showClickPopup(side, opt);
     });
 
@@ -727,6 +730,9 @@ function renderBBPanel(side) {
     li.className = 'bb-item px-2 py-1 rounded cursor-pointer hover:bg-blue-50 flex items-center justify-between gap-1';
     li.dataset.id   = box.id;
     li.dataset.side = side;
+    if (state.mode === 'bb' && state.activeBBSide === side && state.activeBBId === box.id) {
+      li.classList.add('active');
+    }
 
     const span = document.createElement('span');
     span.className = 'truncate flex-1';
@@ -821,9 +827,14 @@ function activateAlignment(idx) {
 
   state.activeAlignIdx = idx;
   const al = alignments[idx];
-  if (al.boxA) highlightBox('A', al.boxA);
-  if (al.boxB) highlightBox('B', al.boxB);
-  state.activeAlignIdx = idx;
+  state.activeBBSide = null;
+  state.activeBBId = null;
+  ['A', 'B'].forEach((side) => fabricCanvases[side]?.discardActiveObject());
+  if (al.boxA && bbRects.A[al.boxA]) fabricCanvases.A?.setActiveObject(bbRects.A[al.boxA]);
+  if (al.boxB && bbRects.B[al.boxB]) fabricCanvases.B?.setActiveObject(bbRects.B[al.boxB]);
+  fabricCanvases.A?.renderAll();
+  fabricCanvases.B?.renderAll();
+  $$('#bb-list-A .bb-item, #bb-list-B .bb-item').forEach((el) => el.classList.remove('active'));
   $$('#align-list .align-item').forEach((el) => {
     el.classList.toggle('active', Number(el.dataset.idx) === idx);
   });
@@ -887,6 +898,9 @@ function highlightBox(side, id) {
   const fc   = fabricCanvases[side];
   const rect = bbRects[side][id];
   if (!rect) return;
+  ['A', 'B'].forEach((otherSide) => {
+    if (otherSide !== side) fabricCanvases[otherSide]?.discardActiveObject();
+  });
   state.activeBBSide = side;
   state.activeBBId = id;
   state.activeAlignIdx = null;
@@ -901,6 +915,19 @@ function highlightBox(side, id) {
     item.classList.add('active');
     item.scrollIntoView({ block: 'nearest' });
   }
+}
+
+function activateBoxForMode(side, id) {
+  if (state.mode === 'align') {
+    const idx = (state.annotations?.alignments ?? []).findIndex((al) =>
+      side === 'A' ? al.boxA === id : al.boxB === id
+    );
+    if (idx !== -1) {
+      activateAlignment(idx);
+      return;
+    }
+  }
+  highlightBox(side, id);
 }
 
 // =========================================================================
@@ -944,7 +971,7 @@ function showClickPopup(side, opt) {
     selectBtn.className = 'text-xs text-blue-600 hover:underline';
     selectBtn.addEventListener('click', () => {
       popup.classList.add('hidden');
-      highlightBox(side, box.id);
+      activateBoxForMode(side, box.id);
     });
 
     const editBtn = document.createElement('button');
@@ -1258,10 +1285,23 @@ $$('.tab-btn').forEach((btn) => {
     if (state.mode === 'bb') {
       $('#panel-bb').classList.remove('hidden');
       $('#panel-align').classList.add('hidden');
+      const al = state.annotations?.alignments?.[state.activeAlignIdx];
+      const side = state.activeBBSide ?? (al ? 'A' : null);
+      const id = state.activeBBSide
+        ? state.activeBBId
+        : al?.boxA;
+      if (side && id) highlightBox(side, id);
     } else {
       $('#panel-bb').classList.add('hidden');
       $('#panel-align').classList.remove('hidden');
+      const idx = state.activeAlignIdx ?? (state.activeBBSide
+        ? (state.annotations?.alignments ?? []).findIndex((al) =>
+            state.activeBBSide === 'A' ? al.boxA === state.activeBBId : al.boxB === state.activeBBId
+          )
+        : -1);
+      if (idx >= 0) activateAlignment(idx);
     }
+    renderSidePanels();
   });
 });
 
