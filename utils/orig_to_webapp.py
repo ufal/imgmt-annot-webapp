@@ -36,6 +36,11 @@ import sys
 from pathlib import Path
 
 
+def _position_key(bb: dict) -> tuple[float, float]:
+    """Sort boxes from top to bottom, then left to right."""
+    return (float(bb["y"]), float(bb["x"]))
+
+
 def _write_bb_file(
     bb_file: Path,
     image_id: str,
@@ -63,6 +68,9 @@ def _write_bb_file(
         }
         for i, (bb, text) in enumerate(zip(bbs, texts))
     ]
+    boxes.sort(key=_position_key)
+    for i, box in enumerate(boxes, start=1):
+        box["id"] = str(i)
     data = {
         "image_id": image_id,
         "language": language,
@@ -198,4 +206,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
