@@ -267,6 +267,9 @@ const state = {
   drawing: null,          // { side: 'A'|'B' } while in draw-new-box mode
   editTarget: null,       // { side, box } during edit modal
   alignEditIdx: null,     // index into alignments during align modal
+  activeAlignIdx: null,   // selected alignment in the alignment sidebar
+  activeBBSide: null,     // side of the selected bounding box in the BB sidebar
+  activeBBId: null,       // id of the selected bounding box in the BB sidebar
   saveTimer: null,
   svgNaturalSize: { A: { w: 400, h: 300 }, B: { w: 400, h: 300 } },
 };
@@ -390,6 +393,7 @@ $('#pair-selector').addEventListener('change', async (e) => {
 async function loadPair(pairId) {
   // Fetch annotations
   state.annotations = await apiFetch(`/api/users/${state.userId}/pairs/${pairId}/annotations`);
+  state.activeAlignIdx = null;
   updateImageTitles();
   // Load SVGs
   await Promise.all([
@@ -791,6 +795,8 @@ function renderAlignPanel() {
     delBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       state.annotations.alignments.splice(idx, 1);
+      if (state.activeAlignIdx === idx) state.activeAlignIdx = null;
+      else if (state.activeAlignIdx > idx) state.activeAlignIdx -= 1;
       renderSidePanels();
       scheduleSave();
     });
@@ -801,16 +807,78 @@ function renderAlignPanel() {
     li.appendChild(delBtn);
 
     li.addEventListener('click', () => {
-      // Highlight both boxes
-      if (al.boxA) highlightBox('A', al.boxA);
-      if (al.boxB) highlightBox('B', al.boxB);
-      $$('#align-list .align-item').forEach((el) => el.classList.remove('active'));
-      li.classList.add('active');
+      activateAlignment(idx);
     });
 
+    if (idx === state.activeAlignIdx) li.classList.add('active');
     ul.appendChild(li);
   });
 }
+
+function activateAlignment(idx) {
+  const alignments = state.annotations?.alignments ?? [];
+  if (idx < 0 || idx >= alignments.length) return;
+
+  state.activeAlignIdx = idx;
+  const al = alignments[idx];
+  if (al.boxA) highlightBox('A', al.boxA);
+  if (al.boxB) highlightBox('B', al.boxB);
+  state.activeAlignIdx = idx;
+  $$('#align-list .align-item').forEach((el) => {
+    el.classList.toggle('active', Number(el.dataset.idx) === idx);
+  });
+  document.querySelector(`#align-list [data-idx="${idx}"]`)
+    ?.scrollIntoView({ block: 'nearest' });
+}
+
+document.addEventListener('keydown', (e) => {
+  if (!state.annotations) return;
+  if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return;
+  if (!$('#align-modal').classList.contains('hidden')) return;
+
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+
+  if (state.mode === 'align') {
+    if (!['ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    const alignments = state.annotations.alignments ?? [];
+    if (!alignments.length) return;
+    const step = e.key === 'ArrowDown' ? 1 : -1;
+    const current = state.activeAlignIdx === null
+      ? (step > 0 ? -1 : 0)
+      : state.activeAlignIdx;
+    activateAlignment((current + step + alignments.length) % alignments.length);
+    e.preventDefault();
+    return;
+  }
+
+  if (state.mode !== 'bb') return;
+  const activeObject = state.activeBBSide
+    ? fabricCanvases[state.activeBBSide]?.getActiveObject()
+    : null;
+  const selectedId = activeObject?.data?.side === state.activeBBSide
+    ? activeObject.data.id
+    : state.activeBBId;
+  const side = state.activeBBSide ?? 'A';
+  const boxes = state.annotations[`svg${side}`]?.boxes ?? [];
+  if (!boxes.length) return;
+
+  const currentIndex = boxes.findIndex((box) => box.id === selectedId);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    const targetSide = e.key === 'ArrowLeft' ? 'A' : 'B';
+    if (targetSide === side) return;
+    const targetBoxes = state.annotations[`svg${targetSide}`]?.boxes ?? [];
+    if (!targetBoxes.length) return;
+    const targetIndex = currentIndex < 0
+      ? 0
+      : Math.min(currentIndex, targetBoxes.length - 1);
+    highlightBox(targetSide, targetBoxes[targetIndex].id);
+  } else {
+    const step = e.key === 'ArrowDown' ? 1 : -1;
+    const current = currentIndex < 0 ? (step > 0 ? -1 : 0) : currentIndex;
+    highlightBox(side, boxes[(current + step + boxes.length) % boxes.length].id);
+  }
+  e.preventDefault();
+});
 
 // =========================================================================
 // Highlight / select a box
@@ -819,6 +887,9 @@ function highlightBox(side, id) {
   const fc   = fabricCanvases[side];
   const rect = bbRects[side][id];
   if (!rect) return;
+  state.activeBBSide = side;
+  state.activeBBId = id;
+  state.activeAlignIdx = null;
   fc.setActiveObject(rect);
   fc.renderAll();
 
@@ -1074,7 +1145,15 @@ function deleteBox(side, id) {
   boxes.splice(idx, 1);
   // Also remove any alignments referencing this box
   const key   = side === 'A' ? 'boxA' : 'boxB';
-  state.annotations.alignments = state.annotations.alignments.filter((al) => al[key] !== id);
+  const oldAlignments = state.annotations.alignments;
+  const activeAlignment = state.activeAlignIdx === null
+    ? null
+    : oldAlignments[state.activeAlignIdx];
+  state.annotations.alignments = oldAlignments.filter((al) => al[key] !== id);
+  if (state.activeAlignIdx !== null) {
+    const newActiveIdx = state.annotations.alignments.indexOf(activeAlignment);
+    state.activeAlignIdx = newActiveIdx === -1 ? null : newActiveIdx;
+  }
   renderBoxes(side);
   renderSidePanels();
   scheduleSave();
