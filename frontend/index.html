@@ -459,6 +459,8 @@ function initCanvases() {
       stopContextMenu: true,
     });
     fabricCanvases[side] = fc;
+    fc.on('selection:created', () => syncBBSelection(side));
+    fc.on('selection:updated', () => syncBBSelection(side));
 
     // ---- Pan & zoom (mouse wheel) ----
     fc.on('mouse:wheel', (opt) => {
@@ -898,9 +900,7 @@ function highlightBox(side, id) {
   const fc   = fabricCanvases[side];
   const rect = bbRects[side][id];
   if (!rect) return;
-  ['A', 'B'].forEach((otherSide) => {
-    if (otherSide !== side) fabricCanvases[otherSide]?.discardActiveObject();
-  });
+  clearCanvasSelections(side);
   state.activeBBSide = side;
   state.activeBBId = id;
   state.activeAlignIdx = null;
@@ -915,6 +915,26 @@ function highlightBox(side, id) {
     item.classList.add('active');
     item.scrollIntoView({ block: 'nearest' });
   }
+}
+
+function clearCanvasSelections(keepSide = null) {
+  ['A', 'B'].forEach((side) => {
+    if (side !== keepSide) {
+      fabricCanvases[side]?.discardActiveObject();
+      fabricCanvases[side]?.renderAll();
+    }
+  });
+}
+
+function syncBBSelection(side) {
+  if (state.mode !== 'bb') return;
+  const selected = fabricCanvases[side]?.getActiveObject();
+  if (!selected?.data?.id || selected.data.side !== side) return;
+  clearCanvasSelections(side);
+  state.activeBBSide = side;
+  state.activeBBId = selected.data.id;
+  state.activeAlignIdx = null;
+  renderSidePanels();
 }
 
 function activateBoxForMode(side, id) {
@@ -1285,6 +1305,7 @@ $$('.tab-btn').forEach((btn) => {
     if (state.mode === 'bb') {
       $('#panel-bb').classList.remove('hidden');
       $('#panel-align').classList.add('hidden');
+      clearCanvasSelections();
       const al = state.annotations?.alignments?.[state.activeAlignIdx];
       const side = state.activeBBSide ?? (al ? 'A' : null);
       const id = state.activeBBSide
