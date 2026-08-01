@@ -813,6 +813,7 @@ function activateAlignment(idx) {
   const al = alignments[idx];
   if (al.boxA) highlightBox('A', al.boxA);
   if (al.boxB) highlightBox('B', al.boxB);
+  state.activeAlignIdx = idx;
   $$('#align-list .align-item').forEach((el) => {
     el.classList.toggle('active', Number(el.dataset.idx) === idx);
   });
@@ -843,6 +844,7 @@ function highlightBox(side, id) {
   const fc   = fabricCanvases[side];
   const rect = bbRects[side][id];
   if (!rect) return;
+  state.activeAlignIdx = null;
   fc.setActiveObject(rect);
   fc.renderAll();
 
@@ -1098,7 +1100,15 @@ function deleteBox(side, id) {
   boxes.splice(idx, 1);
   // Also remove any alignments referencing this box
   const key   = side === 'A' ? 'boxA' : 'boxB';
-  state.annotations.alignments = state.annotations.alignments.filter((al) => al[key] !== id);
+  const oldAlignments = state.annotations.alignments;
+  const activeAlignment = state.activeAlignIdx === null
+    ? null
+    : oldAlignments[state.activeAlignIdx];
+  state.annotations.alignments = oldAlignments.filter((al) => al[key] !== id);
+  if (state.activeAlignIdx !== null) {
+    const newActiveIdx = state.annotations.alignments.indexOf(activeAlignment);
+    state.activeAlignIdx = newActiveIdx === -1 ? null : newActiveIdx;
+  }
   renderBoxes(side);
   renderSidePanels();
   scheduleSave();
