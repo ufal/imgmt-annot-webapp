@@ -1,0 +1,50 @@
+{
+  "image_id": "2618",
+  "language": "gu",
+  "png": {
+    "wikimedia_url": "https://commons.wikimedia.org/w/index.php?title=File:Chemical_precipitation_diagram_multilang.svg&lang=gu",
+    "size": {
+      "width": 871.64,
+      "height": 799
+    },
+    "licensing": {
+      "license": "CC BY-SA 4.0",
+      "original_license": "CC0",
+      "author": "ZooFari"
+    }
+  },
+  "boxes": [
+    {
+      "id": "1",
+      "x": 38.7,
+      "y": 51.57,
+      "w": 101.72,
+      "h": 40.26,
+      "text": "દ્રાવણ"
+    },
+    {
+      "id": "2",
+      "x": 41.57,
+      "y": 709.12,
+      "w": 134.0,
+      "h": 43.9,
+      "text": "નિલંબન"
+    },
+    {
+      "id": "3",
+      "x": 687.09,
+      "y": 39.42,
+      "w": 154.41,
+      "h": 43.92,
+      "text": "અધિપ્લવ"
+    },
+    {
+      "id": "4",
+      "x": 711.2,
+      "y": 709.61,
+      "w": 130.3,
+      "h": 48.8,
+      "text": "અવક્ષેપ"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "image_id": "2618",
+  "language": "de",
+  "png": {
+    "wikimedia_url": "https://commons.wikimedia.org/w/index.php?title=File:Chemical_precipitation_diagram_multilang.svg&lang=de",
+    "size": {
+      "width": 871.64,
+      "height": 799
+    },
+    "licensing": {
+      "license": "CC BY-SA 4.0",
+      "original_license": "CC0",
+      "author": "ZooFari"
+    }
+  },
+  "boxes": [
+    {
+      "id": "1",
+      "x": 40.57,
+      "y": 50.91,
+      "w": 147.54,
+      "h": 40.9,
+      "text": "Lösung"
+    },
+    {
+      "id": "2",
+      "x": 39.17,
+      "y": 720.25,
+      "w": 242.85,
+      "h": 41.03,
+      "text": "Suspension"
+    },
+    {
+      "id": "3",
+      "x": 621.97,
+      "y": 42.97,
+      "w": 216.67,
+      "h": 40.5,
+      "text": "Überstand"
+    },
+    {
+      "id": "4",
+      "x": 641.29,
+      "y": 720.61,
+      "w": 200.4,
+      "h": 40.67,
+      "text": "Präzipitat"
+    }
+  ]
+}

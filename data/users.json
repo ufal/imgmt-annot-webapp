@@ -1,7 +1,7 @@
 {
   "demo_user": {
     "display_name": "Demo User",
-    "datasets": ["pair_001", "pair_002"]
+    "datasets": ["pair_001", "pair_002", "pair_044"]
   },
   "annotator1": {
     "display_name": "Annotator One",

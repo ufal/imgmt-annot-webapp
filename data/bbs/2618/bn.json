@@ -1,0 +1,50 @@
+{
+  "image_id": "2618",
+  "language": "bn",
+  "png": {
+    "wikimedia_url": "https://commons.wikimedia.org/w/index.php?title=File:Chemical_precipitation_diagram_multilang.svg&lang=bn",
+    "size": {
+      "width": 871.64,
+      "height": 799
+    },
+    "licensing": {
+      "license": "CC BY-SA 4.0",
+      "original_license": "CC0",
+      "author": "ZooFari"
+    }
+  },
+  "boxes": [
+    {
+      "id": "1",
+      "x": 35.57,
+      "y": 49.93,
+      "w": 87.65,
+      "h": 35.22,
+      "text": "দ্রবণ"
+    },
+    {
+      "id": "2",
+      "x": 35.57,
+      "y": 719.63,
+      "w": 230.87,
+      "h": 42.99,
+      "text": "সম্পৃক্ত দ্রবণ"
+    },
+    {
+      "id": "3",
+      "x": 734.05,
+      "y": 51.08,
+      "w": 109.27,
+      "h": 34.07,
+      "text": "দ্রাবক"
+    },
+    {
+      "id": "4",
+      "x": 590.39,
+      "y": 706.08,
+      "w": 252.94,
+      "h": 48.77,
+      "text": "অদ্রবণীর দ্রব্য"
+    }
+  ]
+}
