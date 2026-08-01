@@ -828,12 +828,13 @@ document.addEventListener('keydown', (e) => {
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return;
   if (!$('#align-modal').classList.contains('hidden')) return;
 
-  if (!['ArrowUp', 'ArrowDown'].includes(e.key)) return;
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
 
-  const step = e.key === 'ArrowDown' ? 1 : -1;
   if (state.mode === 'align') {
+    if (!['ArrowUp', 'ArrowDown'].includes(e.key)) return;
     const alignments = state.annotations.alignments ?? [];
     if (!alignments.length) return;
+    const step = e.key === 'ArrowDown' ? 1 : -1;
     const current = state.activeAlignIdx === null
       ? (step > 0 ? -1 : 0)
       : state.activeAlignIdx;
@@ -843,19 +844,31 @@ document.addEventListener('keydown', (e) => {
   }
 
   if (state.mode !== 'bb') return;
-  const selected = ['A', 'B']
-    .map((side) => ({ side, object: fabricCanvases[side]?.getActiveObject() }))
-    .find(({ object }) => object?.data?.side && object?.data?.id);
-  const side = selected?.side ?? state.activeBBSide ?? 'A';
+  const activeObject = state.activeBBSide
+    ? fabricCanvases[state.activeBBSide]?.getActiveObject()
+    : null;
+  const selectedId = activeObject?.data?.side === state.activeBBSide
+    ? activeObject.data.id
+    : state.activeBBId;
+  const side = state.activeBBSide ?? 'A';
   const boxes = state.annotations[`svg${side}`]?.boxes ?? [];
   if (!boxes.length) return;
 
-  const selectedId = selected?.object?.data?.id ?? (
-    state.activeBBSide === side ? state.activeBBId : null
-  );
   const currentIndex = boxes.findIndex((box) => box.id === selectedId);
-  const current = currentIndex < 0 ? (step > 0 ? -1 : 0) : currentIndex;
-  highlightBox(side, boxes[(current + step + boxes.length) % boxes.length].id);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    const targetSide = e.key === 'ArrowLeft' ? 'A' : 'B';
+    if (targetSide === side) return;
+    const targetBoxes = state.annotations[`svg${targetSide}`]?.boxes ?? [];
+    if (!targetBoxes.length) return;
+    const targetIndex = currentIndex < 0
+      ? 0
+      : Math.min(currentIndex, targetBoxes.length - 1);
+    highlightBox(targetSide, targetBoxes[targetIndex].id);
+  } else {
+    const step = e.key === 'ArrowDown' ? 1 : -1;
+    const current = currentIndex < 0 ? (step > 0 ? -1 : 0) : currentIndex;
+    highlightBox(side, boxes[(current + step + boxes.length) % boxes.length].id);
+  }
   e.preventDefault();
 });
 
