@@ -160,7 +160,7 @@ Interactive API docs are available at **http://localhost:8000/docs**.
 | `Escape` | Cancel drawing / close popup or modal |
 | `Delete` / `Backspace` | Delete the currently selected bounding box on the canvas |
 | Mouse wheel | Zoom in / out on canvases |
-| `Alt` + drag | Pan canvas |
+| `Alt` + drag or left-drag outside a bounding box when zoomed in | Pan canvas |
 
 ---
 

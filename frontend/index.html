@@ -454,10 +454,25 @@ function initCanvases() {
       opt.e.stopPropagation();
     });
 
-    // ---- Pan (alt+drag or middle button) ----
+    // ---- Pan (alt+drag, middle button, or left-drag outside a BB when zoomed) ----
     let isPanning = false, lastPan = null;
     fc.on('mouse:down', (opt) => {
-      if (opt.e.altKey || opt.e.button === 1) {
+      const pointer = fc.getPointer(opt.e, false);
+      const clickedBox = (state.annotations?.[`svg${side}`]?.boxes ?? []).some(
+        (box) =>
+          pointer.x >= box.x &&
+          pointer.x <= box.x + box.width &&
+          pointer.y >= box.y &&
+          pointer.y <= box.y + box.height
+      );
+      const leftDragOutsideBox =
+        opt.e.button === 0 &&
+        !opt.e.altKey &&
+        !state.drawing &&
+        !clickedBox &&
+        fc.getZoom() > getFitZoom(side) + 0.001;
+
+      if (opt.e.altKey || opt.e.button === 1 || leftDragOutsideBox) {
         isPanning = true;
         lastPan = { x: opt.e.clientX, y: opt.e.clientY };
         fc.setCursor('grab');
@@ -621,12 +636,17 @@ function fitToCanvas(side) {
   const fc  = fabricCanvases[side];
   const img = svgImages[side];
   if (!fc || !img) return;
+  const scale = getFitZoom(side);
+  fc.setViewportTransform([scale, 0, 0, scale, 20, 20]);
+  fc.renderAll();
+}
+
+function getFitZoom(side) {
+  const fc = fabricCanvases[side];
   const { w: svgW, h: svgH } = state.svgNaturalSize[side];
   const scaleX = fc.getWidth()  / (svgW || 400);
   const scaleY = fc.getHeight() / (svgH || 300);
-  const scale  = Math.min(scaleX, scaleY) * 0.92;
-  fc.setViewportTransform([scale, 0, 0, scale, 20, 20]);
-  fc.renderAll();
+  return Math.min(scaleX, scaleY) * 0.92;
 }
 
 // =========================================================================
