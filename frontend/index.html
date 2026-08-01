@@ -165,6 +165,10 @@
           <div class="canvas-wrap flex-1 relative" id="wrap-A">
             <canvas id="canvas-A"></canvas>
           </div>
+          <label id="comment-panel-A" class="flex flex-col gap-1 text-xs text-slate-500">
+            Comment for SVG A
+            <textarea id="comment-A" rows="2" class="resize-y border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="Add a comment about SVG A"></textarea>
+          </label>
         </div>
 
         <!-- SVG B canvas -->
@@ -180,7 +184,15 @@
           <div class="canvas-wrap flex-1 relative" id="wrap-B">
             <canvas id="canvas-B"></canvas>
           </div>
+          <label id="comment-panel-B" class="flex flex-col gap-1 text-xs text-slate-500">
+            Comment for SVG B
+            <textarea id="comment-B" rows="2" class="resize-y border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="Add a comment about SVG B"></textarea>
+          </label>
         </div>
+      </div>
+      <div id="pair-comment-panel" class="hidden px-3 pb-3">
+        <label for="pair-comment" class="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-1">Pair Comment</label>
+        <textarea id="pair-comment" rows="2" class="w-full resize-y border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400" placeholder="Add a comment about this pair"></textarea>
       </div>
     </main>
   </div>
@@ -315,6 +327,20 @@ function scheduleSave() {
   clearTimeout(state.saveTimer);
   state.saveTimer = setTimeout(doSave, 800);
 }
+
+['A', 'B'].forEach((side) => {
+  $(`#comment-${side}`).addEventListener('input', (e) => {
+    if (!state.annotations) return;
+    state.annotations[`svg${side}`].comment = e.target.value;
+    scheduleSave();
+  });
+});
+
+$('#pair-comment').addEventListener('input', (e) => {
+  if (!state.annotations) return;
+  state.annotations.comment = e.target.value;
+  scheduleSave();
+});
 
 async function doSave() {
   if (!state.userId || !state.currentPair || !state.annotations) return;
@@ -717,9 +743,23 @@ function renderBoxes(side) {
 // Side panels
 // =========================================================================
 function renderSidePanels() {
+  renderComments();
   renderBBPanel('A');
   renderBBPanel('B');
   renderAlignPanel();
+}
+
+function renderComments() {
+  ['A', 'B'].forEach((side) => {
+    const input = $(`#comment-${side}`);
+    if (input && document.activeElement !== input) {
+      input.value = state.annotations?.[`svg${side}`]?.comment ?? '';
+    }
+  });
+  const pairInput = $('#pair-comment');
+  if (pairInput && document.activeElement !== pairInput) {
+    pairInput.value = state.annotations?.comment ?? '';
+  }
 }
 
 function renderBBPanel(side) {
@@ -1305,6 +1345,9 @@ $$('.tab-btn').forEach((btn) => {
     if (state.mode === 'bb') {
       $('#panel-bb').classList.remove('hidden');
       $('#panel-align').classList.add('hidden');
+      $('#comment-panel-A').classList.remove('hidden');
+      $('#comment-panel-B').classList.remove('hidden');
+      $('#pair-comment-panel').classList.add('hidden');
       clearCanvasSelections();
       const al = state.annotations?.alignments?.[state.activeAlignIdx];
       const side = state.activeBBSide ?? (al ? 'A' : null);
@@ -1315,6 +1358,9 @@ $$('.tab-btn').forEach((btn) => {
     } else {
       $('#panel-bb').classList.add('hidden');
       $('#panel-align').classList.remove('hidden');
+      $('#comment-panel-A').classList.add('hidden');
+      $('#comment-panel-B').classList.add('hidden');
+      $('#pair-comment-panel').classList.remove('hidden');
       const idx = state.activeAlignIdx ?? (state.activeBBSide
         ? (state.annotations?.alignments ?? []).findIndex((al) =>
             state.activeBBSide === 'A' ? al.boxA === state.activeBBId : al.boxB === state.activeBBId
