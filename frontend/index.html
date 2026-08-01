@@ -155,7 +155,7 @@
         <!-- SVG A canvas -->
         <div class="flex-1 flex flex-col gap-1 min-w-0">
           <div class="flex items-center justify-between px-1">
-            <span class="text-xs font-semibold text-blue-600">SVG A (Source)</span>
+            <span id="canvas-title-A" class="text-xs font-semibold text-blue-600">SVG A</span>
             <div class="flex gap-2">
               <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="A" data-dir="in">＋ zoom</button>
               <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="A" data-dir="out">－ zoom</button>
@@ -170,7 +170,7 @@
         <!-- SVG B canvas -->
         <div class="flex-1 flex flex-col gap-1 min-w-0">
           <div class="flex items-center justify-between px-1">
-            <span class="text-xs font-semibold text-green-600">SVG B (Translation)</span>
+            <span id="canvas-title-B" class="text-xs font-semibold text-green-600">SVG B</span>
             <div class="flex gap-2">
               <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="B" data-dir="in">＋ zoom</button>
               <button class="zoom-btn text-xs text-slate-500 hover:text-slate-800" data-canvas="B" data-dir="out">－ zoom</button>
@@ -394,6 +394,7 @@ async function loadPair(pairId) {
   // Fetch annotations
   state.annotations = await apiFetch(`/api/users/${state.userId}/pairs/${pairId}/annotations`);
   state.activeAlignIdx = null;
+  updateImageTitles();
   // Load SVGs
   await Promise.all([
     loadSVGIntoCanvas('A', `/api/users/${state.userId}/pairs/${pairId}/svg/A`,
@@ -411,6 +412,13 @@ async function loadPair(pairId) {
     if (state.currentPair === pairId) renderSidePanels();
   });
   $('#save-status').textContent = '';
+}
+
+function updateImageTitles() {
+  const srcLang = state.annotations?.src_lang;
+  const tgtLang = state.annotations?.tgt_lang;
+  $('#canvas-title-A').textContent = `SVG A${srcLang ? ` (${srcLang})` : ''}`;
+  $('#canvas-title-B').textContent = `SVG B${tgtLang ? ` (${tgtLang})` : ''}`;
 }
 
 async function refreshTranslations() {
