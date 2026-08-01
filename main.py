@@ -329,6 +329,8 @@ async def get_annotations(user_id: str, pair_id: str):
             "svgB": {"boxes": []},
             "alignments": [],
             "images_identical": None,
+            "src_lang": None,
+            "tgt_lang": None,
         }
     with pair_file.open("r", encoding="utf-8") as fh:
         aln_data = json.load(fh)
@@ -343,6 +345,8 @@ async def get_annotations(user_id: str, pair_id: str):
             "svgB": {"boxes": []},
             "alignments": [],
             "images_identical": aln_data.get("images_identical"),
+            "src_lang": aln_data.get("src_lang"),
+            "tgt_lang": aln_data.get("tgt_lang"),
         }
     with src_bb_file.open("r", encoding="utf-8") as fh:
         src_bb_data = json.load(fh)
@@ -380,6 +384,8 @@ async def get_annotations(user_id: str, pair_id: str):
         "svgB": {"boxes": boxes_b, "image_size": _image_size(tgt_bb_data)},
         "alignments": alignments,
         "images_identical": aln_data.get("images_identical"),
+        "src_lang": src_lang,
+        "tgt_lang": tgt_lang,
     }
 
 
