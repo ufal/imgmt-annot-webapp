@@ -149,6 +149,15 @@ def _strip_side_prefix(box_id: str) -> str:
     return box_id
 
 
+def _image_size(bb_data: dict[str, Any]) -> dict[str, float] | None:
+    """Return the source image dimensions stored in the BB metadata."""
+    size = bb_data.get("png", {}).get("size", {})
+    width, height = size.get("width"), size.get("height")
+    if width is None or height is None:
+        return None
+    return {"width": width, "height": height}
+
+
 # ---------------------------------------------------------------------------
 # Pydantic models
 # ---------------------------------------------------------------------------
@@ -367,8 +376,8 @@ async def get_annotations(user_id: str, pair_id: str):
         for a in aln_data.get("alignments", [])
     ]
     return {
-        "svgA": {"boxes": boxes_a},
-        "svgB": {"boxes": boxes_b},
+        "svgA": {"boxes": boxes_a, "image_size": _image_size(src_bb_data)},
+        "svgB": {"boxes": boxes_b, "image_size": _image_size(tgt_bb_data)},
         "alignments": alignments,
         "images_identical": aln_data.get("images_identical"),
     }
