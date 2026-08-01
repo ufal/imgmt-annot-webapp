@@ -173,6 +173,7 @@ class BoundingBox(BaseModel):
 
 class AnnotationSide(BaseModel):
     boxes: list[BoundingBox]
+    comment: str = ""
 
 
 class Alignment(BaseModel):
@@ -185,6 +186,7 @@ class Annotations(BaseModel):
     svgB: AnnotationSide
     alignments: list[Alignment]
     images_identical: bool | None = None
+    comment: str = ""
 
 
 class TranslationRequest(BaseModel):
@@ -325,10 +327,11 @@ async def get_annotations(user_id: str, pair_id: str):
     if not pair_file.exists():
         # Return an empty skeleton if the pair hasn't been set up yet.
         return {
-            "svgA": {"boxes": []},
-            "svgB": {"boxes": []},
+            "svgA": {"boxes": [], "comment": ""},
+            "svgB": {"boxes": [], "comment": ""},
             "alignments": [],
             "images_identical": None,
+            "comment": "",
             "src_lang": None,
             "tgt_lang": None,
         }
@@ -341,10 +344,11 @@ async def get_annotations(user_id: str, pair_id: str):
     tgt_bb_file = _safe_path(BBS_DIR, image_id, f"{tgt_lang}.json")
     if not src_bb_file.exists() or not tgt_bb_file.exists():
         return {
-            "svgA": {"boxes": []},
-            "svgB": {"boxes": []},
+            "svgA": {"boxes": [], "comment": ""},
+            "svgB": {"boxes": [], "comment": ""},
             "alignments": [],
             "images_identical": aln_data.get("images_identical"),
+            "comment": aln_data.get("comment", ""),
             "src_lang": aln_data.get("src_lang"),
             "tgt_lang": aln_data.get("tgt_lang"),
         }
@@ -380,10 +384,19 @@ async def get_annotations(user_id: str, pair_id: str):
         for a in aln_data.get("alignments", [])
     ]
     return {
-        "svgA": {"boxes": boxes_a, "image_size": _image_size(src_bb_data)},
-        "svgB": {"boxes": boxes_b, "image_size": _image_size(tgt_bb_data)},
+        "svgA": {
+            "boxes": boxes_a,
+            "comment": src_bb_data.get("comment", ""),
+            "image_size": _image_size(src_bb_data),
+        },
+        "svgB": {
+            "boxes": boxes_b,
+            "comment": tgt_bb_data.get("comment", ""),
+            "image_size": _image_size(tgt_bb_data),
+        },
         "alignments": alignments,
         "images_identical": aln_data.get("images_identical"),
+        "comment": aln_data.get("comment", ""),
         "src_lang": src_lang,
         "tgt_lang": tgt_lang,
     }
@@ -427,6 +440,7 @@ async def save_annotations(user_id: str, pair_id: str, payload: Annotations):
             }
             for b in data[side_key]["boxes"]
         ]
+        existing["comment"] = data[side_key].get("comment", "")
         bb_file.parent.mkdir(parents=True, exist_ok=True)
         with bb_file.open("w", encoding="utf-8") as fh:
             json.dump(existing, fh, ensure_ascii=False, indent=2)
@@ -442,6 +456,7 @@ async def save_annotations(user_id: str, pair_id: str, payload: Annotations):
         for a in data["alignments"]
     ]
     aln_data["images_identical"] = data["images_identical"]
+    aln_data["comment"] = data.get("comment", "")
     aln_file.parent.mkdir(parents=True, exist_ok=True)
     with aln_file.open("w", encoding="utf-8") as fh:
         json.dump(aln_data, fh, ensure_ascii=False, indent=2)

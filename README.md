@@ -20,6 +20,7 @@ The web application to manually annotate or post-edit pairs of SVGs with text th
   - Click an alignment to highlight both boxes at once.
   - Add new alignments or delete existing ones.
 - **Auto-save** — every change is debounced and written back to the JSON file on the server within ~800 ms.
+- **Comments** — add free-form comments to each SVG and to the pair from their corresponding panes.
 
 ---
 
@@ -118,18 +119,21 @@ The folder name must match the entry in `users.json`.
 ```json
 {
   "svgA": {
+    "comment": "",
     "boxes": [
       { "id": "A1", "x": 10, "y": 20, "width": 150, "height": 25, "text": "Hello" }
     ]
   },
   "svgB": {
+    "comment": "",
     "boxes": [
       { "id": "B1", "x": 12, "y": 22, "width": 140, "height": 24, "text": "Hallo" }
     ]
   },
   "alignments": [
     { "boxA": "A1", "boxB": "B1" }
-  ]
+  ],
+  "comment": ""
 }
 ```
 
