@@ -809,6 +809,7 @@ function compareBoxPosition(a, b) {
 }
 
 function insertBoxByPosition(boxes, box) {
+  boxes.sort(compareBoxPosition);
   const index = boxes.findIndex((existing) => compareBoxPosition(box, existing) < 0);
   const insertionIndex = index === -1 ? boxes.length : index;
   boxes.splice(insertionIndex, 0, box);
@@ -816,6 +817,13 @@ function insertBoxByPosition(boxes, box) {
 }
 
 function insertAlignmentByABox(alignments, alignment) {
+  alignments.sort((a, b) => {
+    const boxA = getBox('A', a.boxA);
+    const boxB = getBox('A', b.boxA);
+    if (!boxA) return boxB ? 1 : 0;
+    if (!boxB) return -1;
+    return compareBoxPosition(boxA, boxB);
+  });
   const box = getBox('A', alignment.boxA);
   const index = alignments.findIndex((existing) => {
     const existingBox = getBox('A', existing.boxA);
