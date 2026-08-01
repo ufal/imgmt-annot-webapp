@@ -24,7 +24,7 @@
     #click-popup { position: fixed; z-index: 1000; min-width: 180px; }
 
     /* ---- highlighted list item ---- */
-    .bb-item.active, .align-item.active { background: #dbeafe; }
+    .bb-item.active, .align-item.active { background: #ef4444; color: #fff; }
 
     /* ---- tab active ---- */
     .tab-btn.active { border-bottom: 2px solid #3b82f6; color: #1d4ed8; font-weight: 600; }
@@ -660,6 +660,9 @@ function renderBoxes(side) {
       fill:          color.fill,
       stroke:        color.stroke,
       strokeWidth:   1.5,
+      borderColor:   '#ef4444',
+      cornerColor:   '#ef4444',
+      cornerStrokeColor: '#ef4444',
       selectable:    true,
       hasRotatingPoint: false,
       data:          { side, id: box.id },
@@ -793,6 +796,8 @@ function renderAlignPanel() {
       // Highlight both boxes
       if (al.boxA) highlightBox('A', al.boxA);
       if (al.boxB) highlightBox('B', al.boxB);
+      $$('#align-list .align-item').forEach((el) => el.classList.remove('active'));
+      li.classList.add('active');
     });
 
     ul.appendChild(li);
@@ -813,6 +818,7 @@ function highlightBox(side, id) {
   const item = document.querySelector(`#bb-list-${side} [data-id="${id}"]`);
   if (item) {
     $$('#bb-list-A .bb-item, #bb-list-B .bb-item').forEach((el) => el.classList.remove('active'));
+    $$('#align-list .align-item').forEach((el) => el.classList.remove('active'));
     item.classList.add('active');
     item.scrollIntoView({ block: 'nearest' });
   }
