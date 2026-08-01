@@ -159,7 +159,7 @@ Interactive API docs are available at **http://localhost:8000/docs**.
 |-----|--------|
 | `Escape` | Cancel drawing / close popup or modal |
 | `Delete` / `Backspace` | Delete the currently selected bounding box on the canvas |
-| `ArrowUp` / `ArrowDown` | In the Alignment pane, select the previous / next alignment |
+| `ArrowUp` / `ArrowDown` | In the active pane, select the previous / next alignment or bounding box |
 | Mouse wheel | Zoom in / out on canvases |
 | `Alt` + drag | Pan canvas |
 
