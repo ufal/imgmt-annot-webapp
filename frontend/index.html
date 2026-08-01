@@ -397,10 +397,15 @@ async function loadPair(pairId) {
     loadSVGIntoCanvas('B', `/api/users/${state.userId}/pairs/${pairId}/svg/B`,
       state.annotations.svgB?.image_size),
   ]);
-  await refreshTranslations();
+  // Translations are only used for tooltips. Do not block the annotation UI
+  // while the optional external translation service responds.
+  state.translations = { A: {}, B: {} };
   renderBoxes('A');
   renderBoxes('B');
   renderSidePanels();
+  refreshTranslations().then(() => {
+    if (state.currentPair === pairId) renderSidePanels();
+  });
   $('#save-status').textContent = '';
 }
 
