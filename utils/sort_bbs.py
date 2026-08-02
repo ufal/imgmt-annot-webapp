@@ -52,7 +52,9 @@ def find_bb_files(data_dir: Path, user_id: str | None = None) -> list[Path]:
             pair = json.load(fh)
         image_id = pair["image_id"]
         for language_key in ("src_lang", "tgt_lang"):
-            bb_files.add(data_dir / "bbs" / image_id / f"{pair[language_key]}.json")
+            bb_file = data_dir / "bbs" / image_id / f"{pair[language_key]}.json"
+            if bb_file.exists():
+                bb_files.add(bb_file)
 
     return sorted(bb_files)
 
@@ -65,6 +67,11 @@ def sort_bbs(data_dir: Path, user_id: str | None = None) -> int:
             raise FileNotFoundError(f"BB file not found: {bb_file}")
         sort_bb_file(bb_file)
     return len(bb_files)
+
+
+def sort_bbs_for_user(data_dir: Path, user_id: str) -> int:
+    """Sort BB files belonging to pairs assigned to *user_id*."""
+    return sort_bbs(data_dir, user_id)
 
 
 def main() -> None:
