@@ -139,6 +139,15 @@ The folder name must match the entry in `users.json`.
 
 If a pair directory has no `annotations.json`, the app starts with an empty annotation skeleton.
 
+### Sort bounding boxes
+
+Bounding boxes can be sorted in an existing, partially annotated batch without
+changing their IDs or alignments:
+
+```bash
+python utils/sort_bbs.py /path/to/my-data
+```
+
 ---
 
 ## API Reference
