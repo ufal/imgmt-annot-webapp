@@ -148,6 +148,13 @@ changing their IDs or alignments:
 python utils/sort_bbs.py /path/to/my-data
 ```
 
+To sort only the pairs assigned to one user, pass the user ID. Shared BB files
+referenced by multiple assigned pairs are sorted only once:
+
+```bash
+python utils/sort_bbs.py /path/to/my-data --user annotator1
+```
+
 ---
 
 ## API Reference
