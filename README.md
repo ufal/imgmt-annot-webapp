@@ -142,7 +142,8 @@ If a pair directory has no `annotations.json`, the app starts with an empty anno
 ### Sort bounding boxes
 
 Bounding boxes can be sorted in an existing, partially annotated batch without
-changing their IDs or alignments:
+changing their IDs. Alignment pairs are reordered to match the resulting
+top-to-bottom, left-to-right order of the SVG A bounding boxes:
 
 ```bash
 python utils/sort_bbs.py /path/to/my-data
