@@ -11,6 +11,7 @@ Usage:
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 
@@ -43,13 +44,28 @@ def sort_alignment_file(alignment_file: Path, data_dir: Path) -> None:
         raise ValueError(f"Alignment file has no alignments list: {alignment_file}")
 
     bb_file = data_dir / "bbs" / data["image_id"] / f"{data['src_lang']}.json"
+    if not bb_file.exists():
+        print(
+            f"Warning: source BB file not found, leaving alignments unchanged: {bb_file}",
+            file=sys.stderr,
+        )
+        return
     with bb_file.open("r", encoding="utf-8") as fh:
         boxes = json.load(fh).get("boxes")
     if not isinstance(boxes, list):
         raise ValueError(f"BB file has no boxes list: {bb_file}")
 
-    box_order = {str(box["id"]): index for index, box in enumerate(boxes)}
-    alignments.sort(key=lambda alignment: box_order[str(alignment["src_box"])])
+    box_order = {
+        str(box["id"]): index
+        for index, box in enumerate(boxes)
+        if "id" in box
+    }
+    missing_box_order = len(box_order)
+    alignments.sort(
+        key=lambda alignment: box_order.get(
+            str(alignment.get("src_box")), missing_box_order
+        )
+    )
     with alignment_file.open("w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, indent=2)
 
