@@ -139,6 +139,27 @@ The folder name must match the entry in `users.json`.
 
 If a pair directory has no `annotations.json`, the app starts with an empty annotation skeleton.
 
+### Sort bounding boxes
+
+Bounding boxes can be sorted in an existing, partially annotated batch without
+changing their IDs. Alignment pairs are reordered to match the resulting
+top-to-bottom, left-to-right order of the SVG A bounding boxes:
+
+Alignments whose source BB no longer exists are retained and placed after
+alignments with existing source BBs. If the source BB file is missing, the
+alignment file is left unchanged with a warning.
+
+```bash
+python utils/sort_bbs.py /path/to/my-data
+```
+
+To sort only the pairs assigned to one user, pass the user ID. Shared BB files
+referenced by multiple assigned pairs are sorted only once:
+
+```bash
+python utils/sort_bbs.py /path/to/my-data --user annotator1
+```
+
 ---
 
 ## API Reference

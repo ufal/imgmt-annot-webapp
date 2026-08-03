@@ -804,6 +804,36 @@ function renderBBPanel(side) {
   });
 }
 
+function compareBoxPosition(a, b) {
+  return (a.y - b.y) || (a.x - b.x);
+}
+
+function insertBoxByPosition(boxes, box) {
+  boxes.sort(compareBoxPosition);
+  const index = boxes.findIndex((existing) => compareBoxPosition(box, existing) < 0);
+  const insertionIndex = index === -1 ? boxes.length : index;
+  boxes.splice(insertionIndex, 0, box);
+  return insertionIndex;
+}
+
+function insertAlignmentByABox(alignments, alignment) {
+  alignments.sort((a, b) => {
+    const boxA = getBox('A', a.boxA);
+    const boxB = getBox('A', b.boxA);
+    if (!boxA) return boxB ? 1 : 0;
+    if (!boxB) return -1;
+    return compareBoxPosition(boxA, boxB);
+  });
+  const box = getBox('A', alignment.boxA);
+  const index = alignments.findIndex((existing) => {
+    const existingBox = getBox('A', existing.boxA);
+    return existingBox && box && compareBoxPosition(box, existingBox) < 0;
+  });
+  const insertionIndex = index === -1 ? alignments.length : index;
+  alignments.splice(insertionIndex, 0, alignment);
+  return insertionIndex;
+}
+
 function renderAlignPanel() {
   // Sync image-identity radio buttons
   const val = state.annotations?.images_identical;
@@ -1135,7 +1165,7 @@ function setupDrawing(fc, side) {
     newBox.x = Math.round(Math.min(ptr.x, startPoint.x));
     newBox.y = Math.round(Math.min(ptr.y, startPoint.y));
 
-    state.annotations[`svg${side}`].boxes.push(newBox);
+    insertBoxByPosition(state.annotations[`svg${side}`].boxes, newBox);
     stopDrawing();
     renderBoxes(side);
     renderSidePanels();
@@ -1301,7 +1331,7 @@ $('#align-save').addEventListener('click', () => {
   if (state.alignEditIdx !== null) {
     state.annotations.alignments[state.alignEditIdx] = al;
   } else {
-    state.annotations.alignments.push(al);
+    insertAlignmentByABox(state.annotations.alignments, al);
   }
   $('#align-modal').classList.add('hidden');
   renderSidePanels();

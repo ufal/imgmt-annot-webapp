@@ -7,7 +7,7 @@ The script:
   2. Randomly samples language-pair JSONs across all image groups.
   3. Assigns each image-language SVG to at most one annotator, until each
      annotator has up to <n_pairs_per_annotator> pairs.
-  4. Converts each assigned pair to the native webapp layout (bbs/, pairs/).
+   4. Converts each assigned pair to the native webapp layout (bbs/, pairs/).
   5. Writes users.json (webapp user config) and mapping.json (pair → original
      file mapping) at the output root.
 

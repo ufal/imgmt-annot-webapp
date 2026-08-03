@@ -15,7 +15,8 @@ original-format JSON record.
 
 The same image may appear in several language pairs; storing BBs once avoids
 duplication and ensures a single source of truth for BB annotation.  The bbs/
-files are skipped (not overwritten) if they already exist.
+files are skipped (not overwritten) if they already exist.  Use sort_bbs.py
+separately when boxes need to be ordered in an existing batch.
 
 Original format (one JSON file per language-pair per image):
   <data_root>/<image_id>/<src>-<tgt>.json   — texts + bounding boxes
@@ -198,4 +199,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
