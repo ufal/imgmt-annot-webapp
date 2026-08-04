@@ -224,6 +224,17 @@ def _normalise_image_identity(
     return value
 
 
+def _migrate_image_identity(aln_data: dict[str, Any], aln_file: Path) -> None:
+    """Persist a legacy boolean image-identity annotation in the new format."""
+    original = aln_data.get("images_identical")
+    normalised = _normalise_image_identity(original)
+    if normalised == original:
+        return
+    aln_data["images_identical"] = normalised
+    with aln_file.open("w", encoding="utf-8") as fh:
+        json.dump(aln_data, fh, ensure_ascii=False, indent=2)
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -348,6 +359,7 @@ async def get_annotations(user_id: str, pair_id: str):
         }
     with pair_file.open("r", encoding="utf-8") as fh:
         aln_data = json.load(fh)
+    _migrate_image_identity(aln_data, pair_file)
     image_id = aln_data["image_id"]
     src_lang = aln_data["src_lang"]
     tgt_lang = aln_data["tgt_lang"]
