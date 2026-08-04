@@ -1037,6 +1037,17 @@ function activateBoxForMode(side, id) {
 }
 
 function selectAlignmentBox(side, id) {
+  const alignments = state.annotations?.alignments ?? [];
+  const alignmentIdx = alignments.findIndex((al) =>
+    side === 'A' ? al.boxA === id : al.boxB === id
+  );
+  if (alignmentIdx !== -1) {
+    const alignment = alignments[alignmentIdx];
+    state.alignSelection = { A: alignment.boxA, B: alignment.boxB };
+    activateAlignment(alignmentIdx);
+    return;
+  }
+
   state.alignSelection[side] = id;
   state.activeAlignIdx = null;
   state.activeBBSide = side;
@@ -1325,6 +1336,9 @@ function addAlignmentFromSelection() {
   if (!state.annotations || state.mode !== 'align') return;
   const { A: boxA, B: boxB } = state.alignSelection;
   const alignments = state.annotations.alignments ?? [];
+  if (boxA && boxB && alignments.some((al) => al.boxA === boxA && al.boxB === boxB)) {
+    return;
+  }
   const involvedA = boxA && alignments.some((al) => al.boxA === boxA);
   const involvedB = boxB && alignments.some((al) => al.boxB === boxB);
 
