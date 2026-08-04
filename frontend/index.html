@@ -61,7 +61,7 @@
 <!-- =====================================================================
      MAIN APP  (hidden until login)
 ===================================================================== -->
-<div id="app" class="hidden flex flex-col min-h-screen">
+<div id="app" class="hidden flex flex-col h-screen overflow-hidden">
 
   <!-- Top Nav -->
   <header class="bg-white shadow-sm px-6 py-3 flex items-center justify-between">
@@ -87,13 +87,13 @@
   </div>
 
   <!-- Body -->
-  <div class="flex flex-1 overflow-hidden">
+  <div class="flex flex-1 min-h-0 overflow-hidden">
 
     <!-- Left sidebar -->
-    <aside id="left-panel" class="w-64 bg-white border-r border-slate-200 flex flex-col overflow-hidden flex-shrink-0">
+    <aside id="left-panel" class="w-64 min-h-0 bg-white border-r border-slate-200 flex flex-col overflow-hidden flex-shrink-0">
 
       <!-- BB tab panel -->
-      <div id="panel-bb" class="flex flex-col flex-1 overflow-hidden">
+      <div id="panel-bb" class="flex flex-col flex-1 min-h-0 overflow-hidden">
         <div class="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
           <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Text Fields</span>
           <div class="flex gap-1">
@@ -109,18 +109,18 @@
           <span class="w-1/2">SVG B</span>
         </div>
 
-        <div class="flex flex-1 overflow-hidden gap-1 px-2 pb-2">
+        <div class="flex flex-1 min-h-0 overflow-y-auto gap-1 px-2 pb-2">
           <!-- Side A list -->
-          <ul id="bb-list-A" class="w-1/2 overflow-y-auto flex flex-col gap-0.5 text-xs"></ul>
+          <ul id="bb-list-A" class="w-1/2 flex-shrink-0 flex flex-col gap-0.5 text-xs"></ul>
           <!-- Side B list -->
-          <ul id="bb-list-B" class="w-1/2 overflow-y-auto flex flex-col gap-0.5 text-xs"></ul>
+          <ul id="bb-list-B" class="w-1/2 flex-shrink-0 flex flex-col gap-0.5 text-xs"></ul>
         </div>
       </div>
 
       <!-- Alignment tab panel -->
-      <div id="panel-align" class="hidden flex-col flex-1 overflow-hidden">
+      <div id="panel-align" class="hidden flex flex-col flex-1 min-h-0 overflow-hidden">
         <!-- Image identity -->
-        <div class="px-4 py-3 border-b border-slate-100">
+        <div class="flex flex-col px-4 py-3 border-b border-slate-100">
           <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-2">Image Identity</span>
           <p class="text-xs text-slate-400 mb-2">How similar are the two images (regardless of text)?</p>
           <div class="flex flex-col gap-1 text-xs">
@@ -152,12 +152,15 @@
           <input type="checkbox" id="highlight-unaligned" class="accent-orange-500" />
           <span>Highlight unaligned fields</span>
         </label>
-        <ul id="align-list" class="flex-1 overflow-y-auto p-2 flex flex-col gap-1 text-xs"></ul>
+        <div class="flex flex-1 min-h-0 overflow-y-auto gap-1 px-2 pb-2">
+          <ul id="align-list" class="w-full flex-shrink-0 flex flex-col gap-0.5 text-xs"></ul>
+        </div>
+        <!-- <ul id="align-list" class="flex-1 overflow-y-auto p-2 flex flex-col gap-1 text-xs"></ul> -->
       </div>
     </aside>
 
     <!-- Canvas area -->
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="flex-1 min-h-0 flex flex-col overflow-hidden">
       <div class="flex flex-1 overflow-hidden gap-2 p-3">
 
         <!-- SVG A canvas -->
