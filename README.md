@@ -133,9 +133,14 @@ The folder name must match the entry in `users.json`.
   "alignments": [
     { "boxA": "A1", "boxB": "B1" }
   ],
+  "images_identical": "identical",
   "comment": ""
 }
 ```
+
+`images_identical` can be `"identical"`, `"almost_identical"`, or `"different"`.
+Older annotations using `true` or `false` are loaded as `"identical"` or
+`"different"` respectively.
 
 If a pair directory has no `annotations.json`, the app starts with an empty annotation skeleton.
 

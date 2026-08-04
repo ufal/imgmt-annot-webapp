@@ -122,15 +122,19 @@
         <!-- Image identity -->
         <div class="px-4 py-3 border-b border-slate-100">
           <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide block mb-2">Image Identity</span>
-          <p class="text-xs text-slate-400 mb-2">Are the two images identical (regardless of text)?</p>
+          <p class="text-xs text-slate-400 mb-2">How similar are the two images (regardless of text)?</p>
           <div class="flex flex-col gap-1 text-xs">
             <label class="flex items-center gap-2 cursor-pointer hover:text-slate-700">
-              <input type="radio" name="img-identical" id="img-identical-yes" value="true" class="accent-purple-600" />
+              <input type="radio" name="img-identical" id="img-identical-yes" value="identical" class="accent-purple-600" />
               <span>Identical</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer hover:text-slate-700">
-              <input type="radio" name="img-identical" id="img-identical-no" value="false" class="accent-purple-600" />
-              <span>Not identical</span>
+              <input type="radio" name="img-identical" id="img-identical-almost" value="almost_identical" class="accent-purple-600" />
+              <span>Almost identical</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer hover:text-slate-700">
+              <input type="radio" name="img-identical" id="img-identical-no" value="different" class="accent-purple-600" />
+              <span>Different</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer hover:text-slate-400">
               <input type="radio" name="img-identical" id="img-identical-unset" value="" class="accent-purple-600" checked />
@@ -718,11 +722,12 @@ function renderBoxes(side) {
     rect.on('modified', () => {
       const b = getBox(side, box.id);
       if (!b) return;
-      const mat = fc.viewportTransform;
-      const invMat = fabric.util.invertTransform(mat);
-      const tl = fabric.util.transformPoint({ x: rect.left, y: rect.top }, invMat);
-      b.x      = Math.round(tl.x);
-      b.y      = Math.round(tl.y);
+      // Fabric object coordinates are already in the untransformed canvas
+      // coordinate system.  Applying the viewport inverse here a second time
+      // made saved coordinates depend on the current zoom and fit-to-canvas
+      // transform instead of the PNG dimensions used by the BB JSON.
+      b.x      = Math.round(rect.left);
+      b.y      = Math.round(rect.top);
       b.width  = Math.round(rect.getScaledWidth());
       b.height = Math.round(rect.getScaledHeight());
       renderSidePanels();
@@ -843,7 +848,7 @@ function insertAlignmentByABox(alignments, alignment) {
 function renderAlignPanel() {
   // Sync image-identity radio buttons
   const val = state.annotations?.images_identical;
-  const radioVal = val === true ? 'true' : val === false ? 'false' : '';
+  const radioVal = val === true ? 'identical' : val === false ? 'different' : (val || '');
   document.querySelectorAll('input[name="img-identical"]').forEach((r) => {
     r.checked = r.value === radioVal;
   });
@@ -1302,7 +1307,7 @@ document.querySelectorAll('input[name="img-identical"]').forEach((radio) => {
   radio.addEventListener('change', () => {
     if (!state.annotations) return;
     const v = radio.value;
-    state.annotations.images_identical = v === 'true' ? true : v === 'false' ? false : null;
+    state.annotations.images_identical = v || null;
     scheduleSave();
   });
 });
