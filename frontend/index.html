@@ -719,11 +719,12 @@ function renderBoxes(side) {
     rect.on('modified', () => {
       const b = getBox(side, box.id);
       if (!b) return;
-      const mat = fc.viewportTransform;
-      const invMat = fabric.util.invertTransform(mat);
-      const tl = fabric.util.transformPoint({ x: rect.left, y: rect.top }, invMat);
-      b.x      = Math.round(tl.x);
-      b.y      = Math.round(tl.y);
+      // Fabric object coordinates are already in the untransformed canvas
+      // coordinate system.  Applying the viewport inverse here a second time
+      // made saved coordinates depend on the current zoom and fit-to-canvas
+      // transform instead of the PNG dimensions used by the BB JSON.
+      b.x      = Math.round(rect.left);
+      b.y      = Math.round(rect.top);
       b.width  = Math.round(rect.getScaledWidth());
       b.height = Math.round(rect.getScaledHeight());
       renderSidePanels();
