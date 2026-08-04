@@ -242,6 +242,7 @@
 <div id="align-modal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
   <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
     <h2 class="font-semibold text-slate-700 mb-3 text-sm">Add / Edit Alignment</h2>
+    <div id="align-warnings" class="hidden text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2 mb-3"></div>
     <div class="flex flex-col gap-3 mb-4">
       <label class="text-xs text-slate-500">Box from SVG A
         <select id="align-box-A" class="mt-1 w-full border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none"></select>
@@ -283,6 +284,7 @@ const state = {
   drawing: null,          // { side: 'A'|'B' } while in draw-new-box mode
   editTarget: null,       // { side, box } during edit modal
   alignEditIdx: null,     // index into alignments during align modal
+  alignSelection: { A: null, B: null }, // boxes selected for a new alignment
   activeAlignIdx: null,   // selected alignment in the alignment sidebar
   activeBBSide: null,     // side of the selected bounding box in the BB sidebar
   activeBBId: null,       // id of the selected bounding box in the BB sidebar
@@ -424,6 +426,7 @@ async function loadPair(pairId) {
   // Fetch annotations
   state.annotations = await apiFetch(`/api/users/${state.userId}/pairs/${pairId}/annotations`);
   state.activeAlignIdx = null;
+  state.alignSelection = { A: null, B: null };
   updateImageTitles();
   // Load SVGs
   await Promise.all([
@@ -802,7 +805,10 @@ function renderBBPanel(side) {
     li.appendChild(span);
     li.appendChild(editBtn);
 
-    li.addEventListener('click', () => highlightBox(side, box.id));
+    li.addEventListener('click', () => {
+      if (state.mode === 'align') selectAlignmentBox(side, box.id);
+      else highlightBox(side, box.id);
+    });
     li.addEventListener('dblclick', () => openEditModal(side, box.id));
 
     ul.appendChild(li);
@@ -924,9 +930,12 @@ document.addEventListener('keydown', (e) => {
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return;
   if (!$('#align-modal').classList.contains('hidden')) return;
 
-  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'a', 'A', 'b', 'B'].includes(e.key)) return;
-
   if (state.mode === 'align') {
+    if (e.key.toUpperCase() === 'A') {
+      addAlignmentFromSelection();
+      e.preventDefault();
+      return;
+    }
     if (!['ArrowUp', 'ArrowDown'].includes(e.key)) return;
     const alignments = state.annotations.alignments ?? [];
     if (!alignments.length) return;
@@ -946,6 +955,7 @@ document.addEventListener('keydown', (e) => {
     return;
   }
 
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
   const activeObject = state.activeBBSide
     ? fabricCanvases[state.activeBBSide]?.getActiveObject()
     : null;
@@ -1020,15 +1030,33 @@ function syncBBSelection(side) {
 
 function activateBoxForMode(side, id) {
   if (state.mode === 'align') {
-    const idx = (state.annotations?.alignments ?? []).findIndex((al) =>
-      side === 'A' ? al.boxA === id : al.boxB === id
-    );
-    if (idx !== -1) {
-      activateAlignment(idx);
-      return;
-    }
+    selectAlignmentBox(side, id);
+    return;
   }
   highlightBox(side, id);
+}
+
+function selectAlignmentBox(side, id) {
+  const alignments = state.annotations?.alignments ?? [];
+  const alignmentIdx = alignments.findIndex((al) =>
+    side === 'A' ? al.boxA === id : al.boxB === id
+  );
+  if (alignmentIdx !== -1) {
+    const alignment = alignments[alignmentIdx];
+    state.alignSelection = { A: alignment.boxA, B: alignment.boxB };
+    activateAlignment(alignmentIdx);
+    return;
+  }
+
+  state.alignSelection[side] = id;
+  state.activeAlignIdx = null;
+  state.activeBBSide = side;
+  state.activeBBId = id;
+  const fc = fabricCanvases[side];
+  const rect = bbRects[side][id];
+  if (rect) fc.setActiveObject(rect);
+  fc?.renderAll();
+  renderSidePanels();
 }
 
 // =========================================================================
@@ -1302,11 +1330,35 @@ document.querySelectorAll('input[name="img-identical"]').forEach((radio) => {
 // =========================================================================
 // Alignment modal
 // =========================================================================
-$('#add-align-btn').addEventListener('click', () => {
+$('#add-align-btn').addEventListener('click', addAlignmentFromSelection);
+
+function addAlignmentFromSelection() {
+  if (!state.annotations || state.mode !== 'align') return;
+  const { A: boxA, B: boxB } = state.alignSelection;
+  const alignments = state.annotations.alignments ?? [];
+  if (boxA && boxB && alignments.some((al) => al.boxA === boxA && al.boxB === boxB)) {
+    return;
+  }
+  const involvedA = boxA && alignments.some((al) => al.boxA === boxA);
+  const involvedB = boxB && alignments.some((al) => al.boxB === boxB);
+
+  if (boxA && boxB && !involvedA && !involvedB) {
+    insertAlignmentByABox(alignments, { boxA, boxB });
+    renderSidePanels();
+    scheduleSave();
+    return;
+  }
+
   state.alignEditIdx = null;
-  populateAlignSelects(null, null);
+  populateAlignSelects(boxA, boxB);
+  const warnings = [];
+  if (involvedA) warnings.push(`SVG A box ${boxA} is already involved in an alignment.`);
+  if (involvedB) warnings.push(`SVG B box ${boxB} is already involved in an alignment.`);
+  const warningEl = $('#align-warnings');
+  warningEl.textContent = warnings.join(' ');
+  warningEl.classList.toggle('hidden', warnings.length === 0);
   $('#align-modal').classList.remove('hidden');
-});
+}
 
 function populateAlignSelects(selA, selB) {
   const boxesA = state.annotations?.svgA?.boxes ?? [];
