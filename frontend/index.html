@@ -148,9 +148,14 @@
           <button id="add-align-btn"
                   class="text-xs px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium">+ Add</button>
         </div>
+        <label class="px-4 py-2 border-b border-slate-100 flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+          <input type="checkbox" id="highlight-unaligned" class="accent-orange-500" />
+          <span>Highlight unaligned fields</span>
+        </label>
         <div class="flex flex-1 min-h-0 overflow-y-auto gap-1 px-2 pb-2">
           <ul id="align-list" class="w-full flex-shrink-0 flex flex-col gap-0.5 text-xs"></ul>
         </div>
+        <!-- <ul id="align-list" class="flex-1 overflow-y-auto p-2 flex flex-col gap-1 text-xs"></ul> -->
       </div>
     </aside>
 
@@ -287,6 +292,7 @@ const state = {
   editTarget: null,       // { side, box } during edit modal
   alignEditIdx: null,     // index into alignments during align modal
   alignSelection: { A: null, B: null }, // boxes selected for a new alignment
+  highlightUnaligned: false,
   activeAlignIdx: null,   // selected alignment in the alignment sidebar
   activeBBSide: null,     // side of the selected bounding box in the BB sidebar
   activeBBId: null,       // id of the selected bounding box in the BB sidebar
@@ -746,6 +752,7 @@ function renderBoxes(side) {
   // Bring rects above SVG image
   fc.bringToFront(svgImages[side]);
   Object.values(bbRects[side]).forEach((r) => fc.bringToFront(r));
+  updateUnalignedHighlights();
   fc.renderAll();
 }
 
@@ -757,6 +764,23 @@ function renderSidePanels() {
   renderBBPanel('A');
   renderBBPanel('B');
   renderAlignPanel();
+  updateUnalignedHighlights();
+}
+
+function updateUnalignedHighlights() {
+  const alignments = state.annotations?.alignments ?? [];
+  ['A', 'B'].forEach((side) => {
+    const alignedIds = new Set(alignments.map((al) => side === 'A' ? al.boxA : al.boxB));
+    Object.entries(bbRects[side]).forEach(([id, rect]) => {
+      const isUnaligned = state.highlightUnaligned && !alignedIds.has(id);
+      const color = COLORS[side];
+      rect.set({
+        fill: isUnaligned ? 'rgba(249,115,22,0.22)' : color.fill,
+        stroke: isUnaligned ? '#f97316' : color.stroke,
+      });
+    });
+    fabricCanvases[side]?.renderAll();
+  });
 }
 
 function renderComments() {
@@ -848,6 +872,7 @@ function insertAlignmentByABox(alignments, alignment) {
 }
 
 function renderAlignPanel() {
+  $('#highlight-unaligned').checked = state.highlightUnaligned;
   // Sync image-identity radio buttons
   const val = state.annotations?.images_identical;
   const radioVal = val === true ? 'identical' : val === false ? 'different' : (val || '');
@@ -1327,6 +1352,11 @@ document.querySelectorAll('input[name="img-identical"]').forEach((radio) => {
     state.annotations.images_identical = v || null;
     scheduleSave();
   });
+});
+
+$('#highlight-unaligned').addEventListener('change', (e) => {
+  state.highlightUnaligned = e.target.checked;
+  updateUnalignedHighlights();
 });
 
 // =========================================================================
