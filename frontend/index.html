@@ -930,15 +930,12 @@ document.addEventListener('keydown', (e) => {
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable) return;
   if (!$('#align-modal').classList.contains('hidden')) return;
 
-  if (state.mode === 'align' && e.key.toLowerCase() === 'a') {
-    addAlignmentFromSelection();
-    e.preventDefault();
-    return;
-  }
-
-  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-
   if (state.mode === 'align') {
+    if (e.key.toUpperCase() === 'A') {
+      addAlignmentFromSelection();
+      e.preventDefault();
+      return;
+    }
     if (!['ArrowUp', 'ArrowDown'].includes(e.key)) return;
     const alignments = state.annotations.alignments ?? [];
     if (!alignments.length) return;
@@ -952,6 +949,13 @@ document.addEventListener('keydown', (e) => {
   }
 
   if (state.mode !== 'bb') return;
+  if (e.key.toUpperCase() === 'A' || e.key.toUpperCase() === 'B') {
+    startDrawing(e.key.toUpperCase());
+    e.preventDefault();
+    return;
+  }
+
+  if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
   const activeObject = state.activeBBSide
     ? fabricCanvases[state.activeBBSide]?.getActiveObject()
     : null;
