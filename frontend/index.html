@@ -109,11 +109,11 @@
           <span class="w-1/2">SVG B</span>
         </div>
 
-        <div class="flex flex-1 overflow-hidden gap-1 px-2 pb-2">
+        <div class="flex flex-1 min-h-0 overflow-y-auto gap-1 px-2 pb-2">
           <!-- Side A list -->
-          <ul id="bb-list-A" class="w-1/2 overflow-y-auto flex flex-col gap-0.5 text-xs"></ul>
+          <ul id="bb-list-A" class="w-1/2 flex-shrink-0 flex flex-col gap-0.5 text-xs"></ul>
           <!-- Side B list -->
-          <ul id="bb-list-B" class="w-1/2 overflow-y-auto flex flex-col gap-0.5 text-xs"></ul>
+          <ul id="bb-list-B" class="w-1/2 flex-shrink-0 flex flex-col gap-0.5 text-xs"></ul>
         </div>
       </div>
 
@@ -148,7 +148,7 @@
           <button id="add-align-btn"
                   class="text-xs px-2 py-1 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium">+ Add</button>
         </div>
-        <ul id="align-list" class="flex-1 overflow-y-auto p-2 flex flex-col gap-1 text-xs"></ul>
+        <ul id="align-list" class="flex-1 min-h-0 overflow-y-auto p-2 flex flex-col gap-1 text-xs"></ul>
       </div>
     </aside>
 
