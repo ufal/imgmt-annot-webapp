@@ -26,7 +26,7 @@ import re
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -185,7 +185,7 @@ class Annotations(BaseModel):
     svgA: AnnotationSide
     svgB: AnnotationSide
     alignments: list[Alignment]
-    images_identical: bool | None = None
+    images_identical: Literal["identical", "almost_identical", "different"] | bool | None = None
     comment: str = ""
 
 
@@ -211,6 +211,17 @@ def _translate_text(text: str) -> dict[str, str | None]:
         "translation": translated or None,
         "source_language": result[2] if len(result) > 2 else None,
     }
+
+
+def _normalise_image_identity(
+    value: Literal["identical", "almost_identical", "different"] | bool | None,
+) -> Literal["identical", "almost_identical", "different"] | None:
+    """Map legacy boolean image-identity annotations to the three-level scale."""
+    if value is True:
+        return "identical"
+    if value is False:
+        return "different"
+    return value
 
 
 # ---------------------------------------------------------------------------
@@ -347,7 +358,7 @@ async def get_annotations(user_id: str, pair_id: str):
             "svgA": {"boxes": [], "comment": ""},
             "svgB": {"boxes": [], "comment": ""},
             "alignments": [],
-            "images_identical": aln_data.get("images_identical"),
+            "images_identical": _normalise_image_identity(aln_data.get("images_identical")),
             "comment": aln_data.get("comment", ""),
             "src_lang": aln_data.get("src_lang"),
             "tgt_lang": aln_data.get("tgt_lang"),
@@ -395,7 +406,7 @@ async def get_annotations(user_id: str, pair_id: str):
             "image_size": _image_size(tgt_bb_data),
         },
         "alignments": alignments,
-        "images_identical": aln_data.get("images_identical"),
+        "images_identical": _normalise_image_identity(aln_data.get("images_identical")),
         "comment": aln_data.get("comment", ""),
         "src_lang": src_lang,
         "tgt_lang": tgt_lang,
@@ -455,7 +466,7 @@ async def save_annotations(user_id: str, pair_id: str, payload: Annotations):
         }
         for a in data["alignments"]
     ]
-    aln_data["images_identical"] = data["images_identical"]
+    aln_data["images_identical"] = _normalise_image_identity(data["images_identical"])
     aln_data["comment"] = data.get("comment", "")
     aln_file.parent.mkdir(parents=True, exist_ok=True)
     with aln_file.open("w", encoding="utf-8") as fh:
