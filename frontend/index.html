@@ -910,11 +910,7 @@ function renderAlignPanel() {
     delBtn.className = 'text-slate-300 hover:text-red-500 flex-shrink-0';
     delBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      state.annotations.alignments.splice(idx, 1);
-      if (state.activeAlignIdx === idx) state.activeAlignIdx = null;
-      else if (state.activeAlignIdx > idx) state.activeAlignIdx -= 1;
-      renderSidePanels();
-      scheduleSave();
+      deleteAlignment(idx);
     });
 
     li.appendChild(textA);
@@ -929,6 +925,16 @@ function renderAlignPanel() {
     if (idx === state.activeAlignIdx) li.classList.add('active');
     ul.appendChild(li);
   });
+}
+
+function deleteAlignment(idx) {
+  const alignments = state.annotations?.alignments ?? [];
+  if (idx < 0 || idx >= alignments.length) return;
+  alignments.splice(idx, 1);
+  if (state.activeAlignIdx === idx) state.activeAlignIdx = null;
+  else if (state.activeAlignIdx > idx) state.activeAlignIdx -= 1;
+  renderSidePanels();
+  scheduleSave();
 }
 
 function activateAlignment(idx) {
@@ -1514,10 +1520,17 @@ document.addEventListener('keydown', (e) => {
     $('#edit-modal').classList.add('hidden');
     $('#align-modal').classList.add('hidden');
   }
-  // Delete selected box with Delete key
+  // Delete the selected alignment or box with Delete key
   if (e.key === 'Delete' || e.key === 'Backspace') {
     // Only if no input is focused
     if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+    if (state.mode === 'align') {
+      if (state.activeAlignIdx !== null) {
+        deleteAlignment(state.activeAlignIdx);
+        e.preventDefault();
+      }
+      return;
+    }
     ['A', 'B'].forEach((side) => {
       const fc  = fabricCanvases[side];
       const obj = fc?.getActiveObject?.();
