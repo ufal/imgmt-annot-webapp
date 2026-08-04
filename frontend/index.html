@@ -940,6 +940,12 @@ document.addEventListener('keydown', (e) => {
   }
 
   if (state.mode !== 'bb') return;
+  if (e.key.toUpperCase() === 'A' || e.key.toUpperCase() === 'B') {
+    startDrawing(e.key.toUpperCase());
+    e.preventDefault();
+    return;
+  }
+
   const activeObject = state.activeBBSide
     ? fabricCanvases[state.activeBBSide]?.getActiveObject()
     : null;
@@ -951,9 +957,8 @@ document.addEventListener('keydown', (e) => {
   if (!boxes.length) return;
 
   const currentIndex = boxes.findIndex((box) => box.id === selectedId);
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
-      e.key.toUpperCase() === 'A' || e.key.toUpperCase() === 'B') {
-    const targetSide = e.key === 'ArrowLeft' || e.key.toUpperCase() === 'A' ? 'A' : 'B';
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    const targetSide = e.key === 'ArrowLeft' ? 'A' : 'B';
     if (targetSide === side) return;
     const targetBoxes = state.annotations[`svg${targetSide}`]?.boxes ?? [];
     if (!targetBoxes.length) return;
