@@ -90,7 +90,7 @@ def _sanitise_id(value: str) -> str:
     Allow only safe path components (alphanumeric, dash, underscore).
     Raises HTTP 400 for anything that looks like a path traversal attempt.
     """
-    if not re.fullmatch(r"[A-Za-z0-9_\-]+", value):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9_\-]+", value):
         raise HTTPException(status_code=400, detail=f"Invalid identifier: {value!r}")
     return value
 
@@ -101,6 +101,8 @@ def _safe_path(base: Path, *parts: str) -> Path:
     the result is strictly inside *base*.  Raises HTTP 400 if the resolved path
     would escape the base directory.
     """
+    if not all(isinstance(part, str) for part in parts):
+        raise HTTPException(status_code=400, detail="Path components must be strings.")
     candidate = base.joinpath(*parts).resolve()
     resolved_base = base.resolve()
     try:

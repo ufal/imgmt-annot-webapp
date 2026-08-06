@@ -15,7 +15,11 @@ def _read_json(base: Path, *parts: str) -> dict[str, Any]:
 
 
 def _safe_component(base: Path, *parts: str) -> Path:
-    if any(not re.fullmatch(r"[A-Za-z0-9_.-]+", part) for part in parts):
+    if any(
+        not isinstance(part, str)
+        or not re.fullmatch(r"[A-Za-z0-9_.-]+", part)
+        for part in parts
+    ):
         raise ValueError("Invalid alignment path component")
     candidate = (base.joinpath(*parts)).resolve()
     try:
