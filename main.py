@@ -33,6 +33,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from utils.alignment_readers import read_webapp_alignment
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -375,54 +376,9 @@ async def get_annotations(user_id: str, pair_id: str):
             "src_lang": aln_data.get("src_lang"),
             "tgt_lang": aln_data.get("tgt_lang"),
         }
-    with src_bb_file.open("r", encoding="utf-8") as fh:
-        src_bb_data = json.load(fh)
-    with tgt_bb_file.open("r", encoding="utf-8") as fh:
-        tgt_bb_data = json.load(fh)
-    # Convert from BB-file format (w/h, numeric IDs) to webapp format (width/height, A/B-prefixed IDs)
-    boxes_a = [
-        {
-            "id": f"A{b['id']}",
-            "x": b["x"],
-            "y": b["y"],
-            "width": b["w"],
-            "height": b["h"],
-            "text": b["text"],
-        }
-        for b in src_bb_data["boxes"]
-    ]
-    boxes_b = [
-        {
-            "id": f"B{b['id']}",
-            "x": b["x"],
-            "y": b["y"],
-            "width": b["w"],
-            "height": b["h"],
-            "text": b["text"],
-        }
-        for b in tgt_bb_data["boxes"]
-    ]
-    alignments = [
-        {"boxA": f"A{a['src_box']}", "boxB": f"B{a['tgt_box']}"}
-        for a in aln_data.get("alignments", [])
-    ]
-    return {
-        "svgA": {
-            "boxes": boxes_a,
-            "comment": src_bb_data.get("comment", ""),
-            "image_size": _image_size(src_bb_data),
-        },
-        "svgB": {
-            "boxes": boxes_b,
-            "comment": tgt_bb_data.get("comment", ""),
-            "image_size": _image_size(tgt_bb_data),
-        },
-        "alignments": alignments,
-        "images_identical": _normalise_image_identity(aln_data.get("images_identical")),
-        "comment": aln_data.get("comment", ""),
-        "src_lang": src_lang,
-        "tgt_lang": tgt_lang,
-    }
+    result = read_webapp_alignment(DATA_DIR, pair_id)
+    result["images_identical"] = _normalise_image_identity(result["images_identical"])
+    return result
 
 
 @app.put("/api/users/{user_id}/pairs/{pair_id}/annotations")
