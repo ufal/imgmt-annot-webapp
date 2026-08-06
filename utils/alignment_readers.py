@@ -15,6 +15,8 @@ def _read_json(base: Path, *parts: str) -> dict[str, Any]:
 
 
 def _safe_component(base: Path, *parts: str) -> Path:
+    if any(not re.fullmatch(r"[A-Za-z0-9_.-]+", part) for part in parts):
+        raise ValueError("Invalid alignment path component")
     candidate = (base.joinpath(*parts)).resolve()
     try:
         candidate.relative_to(base.resolve())
@@ -25,7 +27,7 @@ def _safe_component(base: Path, *parts: str) -> Path:
 
 def _original_file(data_dir: Path, pair_id: str) -> Path:
     """Resolve an original pair ID such as ``1095/hu-pt``."""
-    if Path(pair_id).is_absolute() or ".." in Path(pair_id).parts:
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", pair_id):
         raise ValueError(f"Invalid original pair ID: {pair_id!r}")
     candidates = [data_dir / f"{pair_id}.json", data_dir / "train" / f"{pair_id}.json"]
     for candidate in candidates:
