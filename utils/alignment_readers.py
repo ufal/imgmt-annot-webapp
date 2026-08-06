@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Any
 
 
-def _read_json(path: Path) -> dict[str, Any]:
+def _read_json(base: Path, *parts: str) -> dict[str, Any]:
+    path = _safe_component(base, *parts)
     with path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
 
@@ -68,7 +69,7 @@ def _side(
 def read_original_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
     """Read an original-format alignment into the webapp annotation structure."""
     original_file = _original_file(data_dir, pair_id)
-    data = _read_json(original_file)
+    data = _read_json(original_file.parent, original_file.name)
     source_boxes = [
         {**box, "text": text}
         for text, box in zip(data["source_texts"], data["source_text_bounding_boxes"])
@@ -99,7 +100,7 @@ def read_webapp_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
     if not re.fullmatch(r"[A-Za-z0-9_-]+", pair_id):
         raise ValueError(f"Invalid webapp pair ID: {pair_id!r}")
     pair_file = data_dir / "pairs" / pair_id / "alignments.json"
-    alignment_data = _read_json(pair_file)
+    alignment_data = _read_json(pair_file.parent, pair_file.name)
     image_id = alignment_data["image_id"]
     src_lang = alignment_data["src_lang"]
     tgt_lang = alignment_data["tgt_lang"]
@@ -110,8 +111,8 @@ def read_webapp_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
     ):
         raise ValueError("Invalid language ID in alignment metadata")
     bbs_dir = _safe_component(data_dir, "bbs", image_id)
-    source = _read_json(_safe_component(bbs_dir, f"{src_lang}.json"))
-    target = _read_json(_safe_component(bbs_dir, f"{tgt_lang}.json"))
+    source = _read_json(bbs_dir, f"{src_lang}.json")
+    target = _read_json(bbs_dir, f"{tgt_lang}.json")
     return {
         "image_id": image_id,
         "svgA": _side(source["boxes"], "A", source.get("comment", ""), source.get("png", {})),
