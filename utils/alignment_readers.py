@@ -9,6 +9,8 @@ from typing import Any
 
 
 def _read_json(base: Path, *parts: str) -> dict[str, Any]:
+    if not all(isinstance(part, str) for part in parts):
+        raise ValueError("Path components must be strings.")
     path = _safe_component(base, *parts)
     with path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
@@ -32,7 +34,9 @@ def _safe_component(base: Path, *parts: str) -> Path:
 
 def _original_file(data_dir: Path, pair_id: str) -> Path:
     """Resolve an original pair ID such as ``1095/hu-pt``."""
-    if not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", pair_id):
+    if not isinstance(pair_id, str) or not re.fullmatch(
+        r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", pair_id
+    ):
         raise ValueError(f"Invalid original pair ID: {pair_id!r}")
     pair_parts = pair_id.split("/")
     pair_parts[-1] += ".json"
@@ -109,7 +113,7 @@ def read_original_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
 
 def read_webapp_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
     """Read a native webapp pair into the common webapp annotation structure."""
-    if not re.fullmatch(r"[A-Za-z0-9_-]+", pair_id):
+    if not isinstance(pair_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", pair_id):
         raise ValueError(f"Invalid webapp pair ID: {pair_id!r}")
     pair_file = data_dir / "pairs" / pair_id / "alignments.json"
     alignment_data = _read_json(pair_file.parent, pair_file.name)
