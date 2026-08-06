@@ -15,15 +15,16 @@ def _read_json(base: Path, *parts: str) -> dict[str, Any]:
 
 
 def _safe_component(base: Path, *parts: str) -> Path:
-    if any(
-        not isinstance(part, str)
-        or not re.fullmatch(r"[A-Za-z0-9_.-]+", part)
-        for part in parts
-    ):
-        raise ValueError("Invalid alignment path component")
-    candidate = (base.joinpath(*parts)).resolve()
+    safe_parts: list[str] = []
+    for part in parts:
+        if not isinstance(part, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+", part):
+            raise ValueError("Invalid alignment path component")
+        safe_parts.append(part)
+
+    resolved_base = base.resolve()
+    candidate = resolved_base.joinpath(*safe_parts).resolve()
     try:
-        candidate.relative_to(base.resolve())
+        candidate.relative_to(resolved_base)
     except ValueError as exc:
         raise ValueError("Alignment data references a path outside its data directory") from exc
     return candidate
