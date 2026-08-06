@@ -29,7 +29,12 @@ def _original_file(data_dir: Path, pair_id: str) -> Path:
     """Resolve an original pair ID such as ``1095/hu-pt``."""
     if not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", pair_id):
         raise ValueError(f"Invalid original pair ID: {pair_id!r}")
-    candidates = [data_dir / f"{pair_id}.json", data_dir / "train" / f"{pair_id}.json"]
+    pair_parts = pair_id.split("/")
+    pair_parts[-1] += ".json"
+    candidates = [
+        _safe_component(data_dir, *pair_parts),
+        _safe_component(data_dir, "train", *pair_parts),
+    ]
     for candidate in candidates:
         if candidate.is_file():
             return candidate
