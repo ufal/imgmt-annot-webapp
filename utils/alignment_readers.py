@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from shapely.geometry import box
 from typing import Any
 
 
@@ -56,33 +57,44 @@ def _image_size(png: dict[str, Any]) -> dict[str, float] | None:
         return None
     return {"width": size["width"], "height": size["height"]}
 
+def _create_bbox(bb: dict[str, Any], image_size: dict[str, float] | None) -> box:
+    x1 = bb["x"] 
+    y1 = bb["y"]
+    x2 = x1 + (bb["width"] if "width" in bb else bb["w"])
+    y2 = y1 + (bb["height"] if "height" in bb else bb["h"])
+    if image_size is not None:
+        # Normalize the bounding box coordinates if requested
+        x1 /= image_size["width"]
+        y1 /= image_size["height"]
+        x2 /= image_size["width"]
+        y2 /= image_size["height"]
+    return box(x1, y1, x2, y2)
 
 def _side(
     boxes: list[dict[str, Any]],
     prefix: str,
     comment: str = "",
     png: dict[str, Any] | None = None,
+    normalize_bb: bool = False,
 ) -> dict[str, Any]:
+    image_size = _image_size(png) if png is not None else None
     result: dict[str, Any] = {
         "boxes": [
             {
-                "id": f"{prefix}{box.get('id', str(index))}",
-                "x": box["x"],
-                "y": box["y"],
-                "width": box["width"] if "width" in box else box["w"],
-                "height": box["height"] if "height" in box else box["h"],
-                "text": box["text"],
+                "id": f"{prefix}{bb.get('id', str(index))}",
+                "text": bb["text"],
+                "bbox": _create_bbox(bb, image_size if normalize_bb else None),
             }
-            for index, box in enumerate(boxes, 1)
+            for index, bb in enumerate(boxes, 1)
         ],
         "comment": comment,
     }
-    if png is not None:
-        result["image_size"] = _image_size(png)
+    if image_size is not None:
+        result["image_size"] = image_size if not normalize_bb else {"width": 1.0, "height": 1.0}
     return result
 
 
-def read_original_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
+def read_original_alignment(data_dir: Path, pair_id: str, normalize_bb: bool) -> dict[str, Any]:
     """Read an original-format alignment into the webapp annotation structure."""
     original_file = _original_file(data_dir, pair_id)
     data = _read_json(original_file.parent, original_file.name)
@@ -97,8 +109,8 @@ def read_original_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
     count = min(len(source_boxes), len(target_boxes))
     return {
         "image_id": original_file.parent.name,
-        "svgA": _side(source_boxes, "A", png=data.get("source_PNG", {})),
-        "svgB": _side(target_boxes, "B", png=data.get("target_PNG", {})),
+        "svgA": _side(source_boxes, "A", png=data.get("source_PNG", {}), normalize_bb=normalize_bb),
+        "svgB": _side(target_boxes, "B", png=data.get("target_PNG", {}), normalize_bb=normalize_bb),
         "alignments": [
             {"boxA": f"A{index}", "boxB": f"B{index}"}
             for index in range(1, count + 1)
@@ -111,7 +123,7 @@ def read_original_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
     }
 
 
-def read_webapp_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
+def read_webapp_alignment(data_dir: Path, pair_id: str, normalize_bb: bool) -> dict[str, Any]:
     """Read a native webapp pair into the common webapp annotation structure."""
     if not isinstance(pair_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", pair_id):
         raise ValueError(f"Invalid webapp pair ID: {pair_id!r}")
@@ -131,8 +143,8 @@ def read_webapp_alignment(data_dir: Path, pair_id: str) -> dict[str, Any]:
     target = _read_json(bbs_dir, f"{tgt_lang}.json")
     return {
         "image_id": image_id,
-        "svgA": _side(source["boxes"], "A", source.get("comment", ""), source.get("png", {})),
-        "svgB": _side(target["boxes"], "B", target.get("comment", ""), target.get("png", {})),
+        "svgA": _side(source["boxes"], "A", source.get("comment", ""), source.get("png", {}), normalize_bb=normalize_bb),
+        "svgB": _side(target["boxes"], "B", target.get("comment", ""), target.get("png", {}), normalize_bb=normalize_bb),
         "alignments": [
             {"boxA": f"A{alignment['src_box']}", "boxB": f"B{alignment['tgt_box']}"}
             for alignment in alignment_data.get("alignments", [])
