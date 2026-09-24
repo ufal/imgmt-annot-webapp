@@ -42,8 +42,8 @@ def distribute_svgs(
     """Copy missing SVGs and return ``(copied, problems)``.
 
     In checking mode no files are changed.  A problem is a missing destination
-    SVG, a destination whose contents differ from the source, or a missing
-    source SVG for an annotation directory.
+    SVG, a destination whose contents differ from the source, an excess
+    destination SVG, or a missing source SVG for an annotation directory.
     """
     bbs_dir = annotation_data_dir / "bbs"
     sources = _source_svgs(orig_data_dir)
@@ -55,6 +55,13 @@ def distribute_svgs(
         required_languages = {
             path.stem for path in image_dir.glob("*.json") if path.is_file()
         }
+        if check:
+            for destination in sorted(
+                path for path in image_dir.glob("*.svg") if path.is_file()
+            ):
+                if destination.stem not in required_languages:
+                    print(f"Excess annotation SVG: {destination}", file=sys.stderr)
+                    problems += 1
         for language in sorted(required_languages):
             source = sources.get((image_id, language))
             destination = image_dir / f"{language}.svg"
@@ -97,7 +104,7 @@ def main() -> None:
         "--checking",
         dest="check",
         action="store_true",
-        help="Only check that required SVGs exist and match the originals.",
+        help="Only check that required SVGs exist, match the originals, and have no excess SVGs.",
     )
     args = parser.parse_args()
 
