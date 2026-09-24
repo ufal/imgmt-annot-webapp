@@ -165,6 +165,22 @@ referenced by multiple assigned pairs are sorted only once:
 python utils/sort_bbs.py /path/to/my-data --user annotator1
 ```
 
+### Distribute SVGs
+
+Copy missing SVGs from the original ImgMT data into the shared annotation
+directories:
+
+```bash
+python utils/distribute_svgs.py /path/to/orig_data /path/to/my-data
+```
+
+Use `--check` to verify that every required SVG exists and is byte-for-byte
+identical to the original without changing any files:
+
+```bash
+python utils/distribute_svgs.py /path/to/orig_data /path/to/my-data --check
+```
+
 ---
 
 ## API Reference
